@@ -93,6 +93,7 @@ const Navigation = () => {
 };
 
 export default function App() {
+  console.log("App rendering");
   return (
     <AuthProvider>
       <Navigation />

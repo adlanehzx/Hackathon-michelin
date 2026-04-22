@@ -1,6 +1,11 @@
 import axios from "axios";
 
-const API_URL = "http://172.20.10.2:3000/api";
+// Détecte l'environnement: Docker (backend) ou localhost (dev local)
+const API_URL =
+  typeof window !== "undefined" &&
+  window.location.hostname.includes("localhost")
+    ? "http://localhost:3000/api"
+    : "http://backend:3000/api";
 
 export interface LoginResponse {
   success: boolean;
