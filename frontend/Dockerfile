@@ -11,6 +11,7 @@ RUN npm config set fetch-timeout 120000 && \
     npm config set fetch-retry-mintimeout 20000 && \
     npm config set fetch-retry-maxtimeout 120000 && \
     npm install --legacy-peer-deps && \
+    npm install @react-native-async-storage/async-storage@2.2.0 --legacy-peer-deps && \
     npx expo install react-dom react-native-web
 
 # Copier tout le code

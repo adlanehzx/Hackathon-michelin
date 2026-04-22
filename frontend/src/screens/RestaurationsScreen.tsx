@@ -1,11 +1,11 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 
-export const FeedScreen: React.FC = () => {
+export const RestaurationsScreen = () => {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Flux</Text>
-      <Text style={styles.subtitle}>Fonctionnalité à venir</Text>
+      <Text style={styles.title}>Restaurations</Text>
+      <Text style={styles.subtitle}>Découvrez nos restaurants partenaires</Text>
     </View>
   );
 };
@@ -13,12 +13,13 @@ export const FeedScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
+    padding: 20,
     justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fff",
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: "bold",
     marginBottom: 10,
   },

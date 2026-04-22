@@ -5,7 +5,7 @@ import { LoginScreen } from "./LoginScreen";
 import { RegisterScreen } from "./RegisterScreen";
 import { HomeScreen } from "./HomeScreen";
 
-export const SettingsScreen: React.FC = () => {
+export const ProfileScreen: React.FC = () => {
   const { isSignedIn, logout } = useAuth();
   const [showRegister, setShowRegister] = useState(false);
 
