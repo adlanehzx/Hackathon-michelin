@@ -1,13 +1,14 @@
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 
-export default function App() {
+export const MapScreen: React.FC = () => {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Michelin Hackathon</Text>
+      <Text style={styles.title}>Carte</Text>
+      <Text style={styles.subtitle}>Fonctionnalité à venir</Text>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -17,12 +18,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   title: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: "bold",
-    marginBottom: 20,
+    marginBottom: 10,
   },
   subtitle: {
-    fontSize: 18,
+    fontSize: 16,
     color: "#666",
   },
 });
