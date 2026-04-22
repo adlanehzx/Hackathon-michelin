@@ -1,17 +1,23 @@
-version: "3.8"
-
 services:
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      target: dev
     container_name: michelin-backend
     env_file:
       - ./backend/.env
     environment:
-      NODE_ENV: production
+      NODE_ENV: development
       PORT: 3000
+    command: npm run dev
     ports:
       - "3000:3000"
-
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/package.json:/app/package.json
+      - ./backend/package-lock.json:/app/package-lock.json
+      - ./backend/tsconfig.json:/app/tsconfig.json
+      - ./backend/.env:/app/.env
     networks:
       - michelin-network
 
@@ -33,7 +39,6 @@ services:
       - ./frontend/tsconfig.json:/app/tsconfig.json
       - ./frontend/package.json:/app/package.json
       - ./frontend/.env:/app/.env
-
     networks:
       - michelin-network
     depends_on:

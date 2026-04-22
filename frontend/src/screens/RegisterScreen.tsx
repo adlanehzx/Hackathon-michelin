@@ -30,11 +30,8 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
       return;
     }
 
-    if (password.length < 6) {
-      Alert.alert(
-        "Erreur",
-        "Le mot de passe doit contenir au moins 6 caractères",
-      );
+    if (password.length < 8) {
+      Alert.alert("Erreur", "Le mot de passe doit contenir au moins 8 caractères");
       return;
     }
 
@@ -81,12 +78,13 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
         onChangeText={setEmail}
         editable={!isLoading}
         keyboardType="email-address"
+        autoCapitalize="none"
         placeholderTextColor="#999"
       />
 
       <TextInput
         style={styles.input}
-        placeholder="Mot de passe (min 6 caractères)"
+        placeholder="Mot de passe (min 8 caractères)"
         value={password}
         onChangeText={setPassword}
         secureTextEntry

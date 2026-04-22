@@ -22,3 +22,9 @@ declare module "*.webp" {
   const content: any;
   export default content;
 }
+
+declare const process: {
+  env: {
+    EXPO_PUBLIC_API_URL?: string;
+  };
+};
