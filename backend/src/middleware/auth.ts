@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 const JWT_SECRET = process.env.JWT_SECRET || "change_this_secret";
 
 interface AuthRequest extends Request {
-  user?: { id: string; email: string };
+  user?: { id: string; email: string; is_admin: boolean };
 }
 
 const authMiddleware = (
@@ -22,6 +22,7 @@ const authMiddleware = (
     const decoded = jwt.verify(token, JWT_SECRET) as {
       id: string;
       email: string;
+      is_admin: boolean;
     };
     req.user = decoded;
     next();

@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import storage from "../utils/storage";
 import authService, { LoginResponse } from "../services/authService";
 
 interface User {
@@ -40,7 +40,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const restoreToken = async () => {
     try {
-      const savedToken = await AsyncStorage.getItem("authToken");
+      const savedToken = await storage.getItem("authToken");
       if (savedToken) {
         setToken(savedToken);
       }
@@ -72,7 +72,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       });
       setUser(response.user);
       setToken(response.token);
-      await AsyncStorage.setItem("authToken", response.token);
+      await storage.setItem("authToken", response.token);
     } catch (error: any) {
       throw error.error || "Erreur lors de la connexion";
     }
@@ -83,7 +83,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       await authService.logout();
       setUser(null);
       setToken(null);
-      await AsyncStorage.removeItem("authToken");
+      await storage.removeItem("authToken");
     } catch (error) {
       console.error("Error logging out:", error);
     }

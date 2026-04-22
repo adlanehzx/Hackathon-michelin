@@ -1,10 +1,13 @@
+import dotenv from "dotenv";
+
+// Load environment variables FIRST
+dotenv.config();
+
 import express, { Request, Response } from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes";
 import userRoutes from "./routes/userRoutes";
-
-dotenv.config();
+import adminRoutes from "./routes/adminRoutes";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -31,6 +34,7 @@ app.get("/", (req: Request, res: Response) => {
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Start server
 app.listen(PORT, () => {

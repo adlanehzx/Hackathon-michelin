@@ -1,11 +1,11 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 
-export const MapScreen: React.FC = () => {
+export const HotellerieScreen = () => {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Carte</Text>
-      <Text style={styles.subtitle}>Fonctionnalité à venir</Text>
+      <Text style={styles.title}>Hotellerie</Text>
+      <Text style={styles.subtitle}>Trouvez vos hébergements</Text>
     </View>
   );
 };
@@ -13,12 +13,13 @@ export const MapScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
+    padding: 20,
     justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fff",
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: "bold",
     marginBottom: 10,
   },

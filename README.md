@@ -47,24 +47,51 @@ Application mobile pour le hackathon Michelin construite avec React Native et Ex
 
 ## Démarrage Rapide
 
-```bash
-# Cloner et installer
-git clone https://github.com/adlanehzx/Hackathon-michelin.git
-cd Hackathon-michelin
+### 1. Setup des Variables d'Environnement
 
-# Variables d'environnement
+```bash
+# Copier les templates
 cp frontend/.env.example frontend/.env
 cp backend/.env.example backend/.env
+```
 
-# Démarrer avec Docker
-docker compose up -d
+Puis éditer les fichiers `.env` avec vos credentials Supabase:
+
+**backend/.env:**
+
+```
+SUPABASE_URL=https://your-project-id.supabase.co
+SUPABASE_KEY=your-api-key
+JWT_SECRET=your-secret-key-here
+PORT=3000
+NODE_ENV=development
+```
+
+**frontend/.env:**
+
+```
+API_URL=http://localhost:3000/api
+```
+
+### 2. Installation & Démarrage
+
+```bash
+# Installer les dépendances
+cd backend && npm install
+cd ../frontend && npm install && cd ..
+
+# Démarrer avec Docker Compose
+cd backend && docker compose up -d
+
+# Démarrer le frontend (depuis frontend/)
+npx expo start --web
 ```
 
 **Accès:**
 
 - Frontend web: http://localhost:8081
 - Backend API: http://localhost:3000/api
-- Expo: ports 19000-19001
+- Expo: http://localhost:8081
 
 ## Prochaines Étapes
 

@@ -46,6 +46,7 @@ export const register = async (req: Request, res: Response) => {
         password_hash,
         telephone: telephone || null,
         adresse: adresse || null,
+        is_admin: false,
       },
     ]);
 
@@ -94,9 +95,11 @@ export const login = async (req: Request, res: Response) => {
       });
     }
 
-    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, {
-      expiresIn: "7d",
-    });
+    const token = jwt.sign(
+      { id: user.id, email: user.email, is_admin: user.is_admin || false },
+      JWT_SECRET,
+      { expiresIn: "7d" },
+    );
 
     res.json({
       success: true,
@@ -107,6 +110,7 @@ export const login = async (req: Request, res: Response) => {
         nom: user.nom,
         prenom: user.prenom,
         email: user.email,
+        is_admin: user.is_admin || false,
       },
     });
   } catch (error: any) {
