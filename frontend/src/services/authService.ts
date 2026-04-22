@@ -89,7 +89,10 @@ class AuthService {
     data: ForgotPasswordPayload,
   ): Promise<ForgotPasswordResponse> {
     try {
-      const response = await axios.post(`${API_URL}/auth/forgot-password`, data);
+      const response = await axios.post(
+        `${API_URL}/auth/forgot-password`,
+        data,
+      );
       return response.data;
     } catch (error: any) {
       throw error.response?.data || error;
