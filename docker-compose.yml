@@ -4,12 +4,11 @@ services:
   backend:
     build: ./backend
     container_name: michelin-backend
+    env_file:
+      - ./backend/.env
     environment:
       NODE_ENV: production
       PORT: 3000
-      SUPABASE_URL: ${SUPABASE_URL}
-      SUPABASE_KEY: ${SUPABASE_KEY}
-      JWT_SECRET: ${JWT_SECRET:-your_jwt_secret_key}
     ports:
       - "3000:3000"
 
