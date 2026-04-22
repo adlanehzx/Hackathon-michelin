@@ -1,0 +1,12 @@
+node_modules
+.expo
+.git
+.gitignore
+.env
+.DS_Store
+npm-debug.*
+.env.example
+dist
+build
+.next
+*.log
