@@ -12,9 +12,13 @@ import { useAuth } from "../context/AuthContext";
 
 interface LoginScreenProps {
   onGoToRegister: () => void;
+  onGoToForgotPassword: () => void;
 }
 
-export const LoginScreen: React.FC<LoginScreenProps> = ({ onGoToRegister }) => {
+export const LoginScreen: React.FC<LoginScreenProps> = ({
+  onGoToRegister,
+  onGoToForgotPassword,
+}) => {
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -48,6 +52,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onGoToRegister }) => {
         onChangeText={setEmail}
         editable={!isLoading}
         keyboardType="email-address"
+        autoCapitalize="none"
+        autoCorrect={false}
         placeholderTextColor="#999"
       />
 
@@ -75,6 +81,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onGoToRegister }) => {
 
       <TouchableOpacity onPress={onGoToRegister} disabled={isLoading}>
         <Text style={styles.link}>Créer un compte</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={onGoToForgotPassword} disabled={isLoading}>
+        <Text style={styles.linkSecondary}>Mot de passe oublié ?</Text>
       </TouchableOpacity>
     </View>
   );
@@ -131,5 +141,11 @@ const styles = StyleSheet.create({
     color: "#1a73e8",
     fontSize: 14,
     fontWeight: "600",
+  },
+  linkSecondary: {
+    marginTop: 12,
+    color: "#666",
+    fontSize: 14,
+    fontWeight: "500",
   },
 });
