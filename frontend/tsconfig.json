@@ -13,7 +13,7 @@
     "jsx": "react-jsx",
     "jsxImportSource": "react"
   },
-  "include": ["src", "declarations.d.ts"],
+  "include": ["App.tsx", "src", "declarations.d.ts"],
   "exclude": ["node_modules"],
   "extends": "expo/tsconfig.base"
 }

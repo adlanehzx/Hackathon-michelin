@@ -4,9 +4,10 @@
   "main": "index.js",
   "scripts": {
     "start": "expo start",
+    "go": "expo start --go --host lan --port 8081 --non-interactive",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web --port 19006 --non-interactive"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^3.0.2",

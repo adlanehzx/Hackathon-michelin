@@ -75,7 +75,9 @@ const Navigation = () => {
                   style={[styles.navIcon, isActive && styles.navIconActive]}
                 />
               </View>
-              <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>
+              <Text
+                style={[styles.navLabel, isActive && styles.navLabelActive]}
+              >
                 {tab.label}
               </Text>
             </TouchableOpacity>

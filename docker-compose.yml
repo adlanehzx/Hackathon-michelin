@@ -19,17 +19,14 @@ services:
       - ./backend/tsconfig.json:/app/tsconfig.json
       - ./backend/.env:/app/.env
     networks:
-      - michelin-network
-
-  frontend:
+       frontend-web:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: michelin-frontend
+    container_name: michelin-frontend-web
+    command: npm run web
     ports:
-      - "8081:8081"
-      - "19000:19000"
-      - "19001:19001"
+      - "19006:19006"
     volumes:
       - ./frontend/src:/app/src
       - ./frontend/assets:/app/assets
@@ -37,12 +34,45 @@ services:
       - ./frontend/App.tsx:/app/App.tsx
       - ./frontend/index.js:/app/index.js
       - ./frontend/tsconfig.json:/app/tsconfig.json
+      - ./frontend/declarations.d.ts:/app/declarations.d.ts
       - ./frontend/package.json:/app/package.json
       - ./frontend/.env:/app/.env
-    networks:
-      - michelin-network
     depends_on:
       - backend
+    networks:
+      - michelin-network
+    environment:
+      - EXPO_DEBUG=true
+    restart: on-failure
+
+  frontend-go:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: michelin-frontend-go
+    command: npm run go
+    ports:
+      - "8081:8081"
+      - "19000:19000"
+      - "19001:19001"
+      - "19002:19002"
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/assets:/app/assets
+      - ./frontend/app.json:/app/app.json
+      - ./frontend/App.tsx:/app/App.tsx
+      - ./frontend/index.js:/app/index.js
+      - ./frontend/tsconfig.json:/app/tsconfig.json
+      - ./frontend/declarations.d.ts:/app/declarations.d.ts
+      - ./frontend/package.json:/app/package.json
+      - ./frontend/.env:/app/.env
+    depends_on:
+      - backend
+    networks:
+      - michelin-network
+    environment:
+      - EXPO_DEBUG=true
+      - REACT_NATIVE_PACKAGER_HOSTNAME=192.168.1.213
     environment:
       - EXPO_DEBUG=true
     restart: on-failure
