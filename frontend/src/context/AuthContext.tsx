@@ -43,9 +43,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const savedToken = await storage.getItem("authToken");
       if (savedToken) {
         setToken(savedToken);
+        const response = await authService.getCurrentUser(savedToken);
+        setUser(response.user);
+      } else {
+        setUser(null);
       }
     } catch (error) {
       console.error("Error restoring token:", error);
+      setUser(null);
+      setToken(null);
+      await storage.removeItem("authToken");
     } finally {
       setIsLoading(false);
     }
@@ -81,11 +88,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const logout = async () => {
     try {
       await authService.logout();
+    } catch (error) {
+      console.error("Error logging out:", error);
+    } finally {
+      // Always clear local session, even if backend logout request fails.
       setUser(null);
       setToken(null);
       await storage.removeItem("authToken");
-    } catch (error) {
-      console.error("Error logging out:", error);
     }
   };
 

@@ -1,11 +1,39 @@
 import axios from "axios";
+import { Platform } from "react-native";
 
-// Détecte l'environnement: Docker (backend) ou localhost (dev local)
-const API_URL =
-  typeof window !== "undefined" &&
-  window.location.hostname.includes("localhost")
-    ? "http://localhost:3000/api"
-    : "http://backend:3000/api";
+const getApiUrl = () => {
+  const webUrl = process.env.EXPO_PUBLIC_API_URL_WEB;
+  const mobileUrl = process.env.EXPO_PUBLIC_API_URL_MOBILE;
+  const fallbackUrl = process.env.EXPO_PUBLIC_API_URL;
+
+  if (Platform.OS === "web") {
+    if (webUrl) {
+      return webUrl;
+    }
+
+    if (fallbackUrl) {
+      return fallbackUrl;
+    }
+
+    return "http://localhost:3000/api";
+  }
+
+  if (mobileUrl) {
+    return mobileUrl;
+  }
+
+  if (fallbackUrl) {
+    return fallbackUrl;
+  }
+
+  if (Platform.OS === "android") {
+    return "http://10.0.2.2:3000/api";
+  }
+
+  return "http://localhost:3000/api";
+};
+
+const API_URL = getApiUrl();
 
 export interface LoginResponse {
   success: boolean;
@@ -32,6 +60,26 @@ export interface LoginPayload {
   password: string;
 }
 
+export interface ForgotPasswordPayload {
+  email: string;
+}
+
+export interface ForgotPasswordResponse {
+  success: boolean;
+  message: string;
+}
+
+export interface ResetPasswordPayload {
+  email: string;
+  code: string;
+  newPassword: string;
+}
+
+export interface ResetPasswordResponse {
+  success: boolean;
+  message: string;
+}
+
 class AuthService {
   async register(data: RegisterPayload): Promise<any> {
     try {
@@ -45,6 +93,28 @@ class AuthService {
   async login(data: LoginPayload): Promise<LoginResponse> {
     try {
       const response = await axios.post(`${API_URL}/auth/login`, data);
+      return response.data;
+    } catch (error: any) {
+      throw error.response?.data || error;
+    }
+  }
+
+  async forgotPassword(
+    data: ForgotPasswordPayload,
+  ): Promise<ForgotPasswordResponse> {
+    try {
+      const response = await axios.post(`${API_URL}/auth/forgot-password`, data);
+      return response.data;
+    } catch (error: any) {
+      throw error.response?.data || error;
+    }
+  }
+
+  async resetPassword(
+    data: ResetPasswordPayload,
+  ): Promise<ResetPasswordResponse> {
+    try {
+      const response = await axios.post(`${API_URL}/auth/reset-password`, data);
       return response.data;
     } catch (error: any) {
       throw error.response?.data || error;

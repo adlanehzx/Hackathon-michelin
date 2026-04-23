@@ -1,27 +1,29 @@
-FROM node:20.19.4 AS builder
+FROM node:20.19.4 AS base
 
 WORKDIR /app
 
 COPY package*.json ./
+
+FROM base AS builder
 
 RUN npm install --legacy-peer-deps
 
 COPY . .
 
-# Compiler TypeScript, avec output des erreurs
 RUN npm run build && ls -la dist/
 
-# --- Production stage ---
-FROM node:20.19.4
+FROM builder AS dev
+
+CMD ["npm", "run", "dev"]
+
+FROM node:20.19.4 AS production
 
 WORKDIR /app
 
 COPY package*.json ./
 
-# Installer UNIQUEMENT les dépendances de production
-RUN npm install --legacy-peer-deps --production
+RUN npm install --legacy-peer-deps --omit=dev
 
-# Copier le code compilé depuis builder
 COPY --from=builder /app/dist ./dist
 
 EXPOSE 3000
