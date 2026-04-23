@@ -9,6 +9,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -23,6 +24,8 @@ import {
 
 const DEFAULT_FILTERS: ParcoursFilters = {
   mode: "parcours",
+  countries: [],
+  cities: [],
   establishmentTypes: ["restaurant"],
   distinctions: [],
   occasions: [],
@@ -39,6 +42,32 @@ const DEFAULT_FILTERS: ParcoursFilters = {
   services: [],
   visitedPreference: "all",
   chefSelection: "",
+};
+
+type FilterOptions = {
+  countries: string[];
+  cities: string[];
+  establishmentTypes: string[];
+  visitedPreference: string[];
+  cuisines: string[];
+  priceRanges: string[];
+  distinctions: string[];
+};
+
+const DEFAULT_FILTER_OPTIONS: FilterOptions = {
+  countries: [],
+  cities: [],
+  establishmentTypes: ["restaurant", "hotel"],
+  visitedPreference: ["all", "visited", "new"],
+  cuisines: [],
+  priceRanges: [],
+  distinctions: [],
+};
+
+const VISITED_LABELS: Record<string, string> = {
+  all: "Tous",
+  visited: "Deja visites",
+  new: "Nouveaux",
 };
 
 const ProgressBar = ({ value }: { value: number }) => (
@@ -174,7 +203,10 @@ const RestaurantCard = ({
 export const ParcoursScreen = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [applyingFilters, setApplyingFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(true);
   const [filters, setFilters] = useState<ParcoursFilters>(DEFAULT_FILTERS);
+  const [filterOptions, setFilterOptions] = useState<FilterOptions>(DEFAULT_FILTER_OPTIONS);
   const [data, setData] = useState<ParcoursResponse | null>(null);
 
   useEffect(() => {
@@ -220,10 +252,61 @@ export const ParcoursScreen = () => {
     getUserLocation();
   }, []);
 
-  const loadParcours = useCallback(async () => {
+  useEffect(() => {
+    const loadFilterOptions = async () => {
+      const options = await parcoursService.getFilterOptions();
+      setFilterOptions({
+        countries: options.countries,
+        cities: options.cities,
+        establishmentTypes:
+          options.establishmentTypes.length > 0
+            ? options.establishmentTypes
+            : DEFAULT_FILTER_OPTIONS.establishmentTypes,
+        visitedPreference:
+          options.visitedPreference.length > 0
+            ? options.visitedPreference
+            : DEFAULT_FILTER_OPTIONS.visitedPreference,
+        cuisines: options.cuisines,
+        priceRanges: options.priceRanges,
+        distinctions: options.distinctions,
+      });
+    };
+
+    loadFilterOptions();
+  }, []);
+
+  const toggleArrayFilter = (
+    key:
+      | "countries"
+      | "cities"
+      | "establishmentTypes"
+      | "cuisines"
+      | "distinctions"
+      | "priceRanges",
+    value: string
+  ) => {
+    setFilters((prev) => {
+      const current = prev[key] || [];
+      const exists = current.includes(value);
+
+      return {
+        ...prev,
+        [key]: exists ? current.filter((entry) => entry !== value) : [...current, value],
+      };
+    });
+  };
+
+  const loadParcours = useCallback(async (nextFilters?: ParcoursFilters, skipExisting = false) => {
+    const effectiveFilters: ParcoursFilters =
+      nextFilters || {
+        ...DEFAULT_FILTERS,
+        userLatitude: filters.userLatitude,
+        userLongitude: filters.userLongitude,
+      };
+
     setLoading(true);
     try {
-      if (user?.id) {
+      if (user?.id && !skipExisting) {
         const existing = await parcoursService.getUserParcours(user.id);
         if (existing) {
           setData(existing);
@@ -233,9 +316,7 @@ export const ParcoursScreen = () => {
       }
 
       const suggestion = await parcoursService.getSuggestions({
-        ...DEFAULT_FILTERS,
-        userLatitude: filters.userLatitude,
-        userLongitude: filters.userLongitude,
+        ...effectiveFilters,
         userId: user?.id,
       });
 
@@ -255,6 +336,50 @@ export const ParcoursScreen = () => {
   useEffect(() => {
     loadParcours();
   }, [loadParcours]);
+
+  const applyFilters = async () => {
+    setApplyingFilters(true);
+    await loadParcours(filters, true);
+    setApplyingFilters(false);
+    setShowFilters(false);
+  };
+
+  const resetFilters = async () => {
+    const nextFilters: ParcoursFilters = {
+      ...DEFAULT_FILTERS,
+      userLatitude: filters.userLatitude,
+      userLongitude: filters.userLongitude,
+    };
+
+    setFilters(nextFilters);
+    setApplyingFilters(true);
+    await loadParcours(nextFilters, true);
+    setApplyingFilters(false);
+  };
+
+  const createFilteredParcours = async () => {
+    if (!user?.id) {
+      Alert.alert("Parcours", "Connecte-toi pour creer et sauvegarder ton parcours.");
+      return;
+    }
+
+    setApplyingFilters(true);
+    try {
+      const created = await parcoursService.createParcours({
+        ...filters,
+        userId: user.id,
+      });
+
+      if (created?.inProgress && created?.recommended) {
+        setData(created);
+        Alert.alert("Parcours", "Parcours filtre cree avec succes.");
+      } else {
+        Alert.alert("Parcours", "Impossible de creer le parcours avec ces filtres.");
+      }
+    } finally {
+      setApplyingFilters(false);
+    }
+  };
 
   const handleReserve = async (item: ParcoursItem) => {
     if (!item.reservationUrl) {
@@ -285,6 +410,153 @@ export const ParcoursScreen = () => {
     await loadParcours();
   };
 
+  const renderFilterChip = (
+    label: string,
+    active: boolean,
+    onPress: () => void
+  ) => (
+    <TouchableOpacity style={[styles.optionChip, active && styles.optionChipActive]} onPress={onPress}>
+      <Text style={[styles.optionChipText, active && styles.optionChipTextActive]}>{label}</Text>
+    </TouchableOpacity>
+  );
+
+  const renderFiltersPanel = () => (
+    <View style={styles.filtersWrap}>
+      <TouchableOpacity style={styles.filtersToggle} onPress={() => setShowFilters((prev) => !prev)}>
+        <Text style={styles.filtersToggleText}>
+          {showFilters ? "Masquer les filtres" : "Afficher les filtres"}
+        </Text>
+      </TouchableOpacity>
+
+      {!showFilters ? null : (
+        <View style={styles.filtersPanel}>
+          <Text style={styles.panelTitle}>Creation de parcours personnalise</Text>
+
+      <Text style={styles.inputLabel}>Pays</Text>
+      <View style={styles.optionRowStatic}>
+        {(filterOptions.countries.length > 0 ? filterOptions.countries.slice(0, 8) : ["France"]).map(
+          (country) =>
+            renderFilterChip(
+              country,
+              (filters.countries || []).includes(country),
+              () => toggleArrayFilter("countries", country)
+            )
+        )}
+      </View>
+
+      <Text style={styles.inputLabel}>Ville</Text>
+      <View style={styles.optionRowStatic}>
+        {(filterOptions.cities.length > 0 ? filterOptions.cities.slice(0, 10) : ["Paris"]).map((city) =>
+          renderFilterChip(city, (filters.cities || []).includes(city), () =>
+            toggleArrayFilter("cities", city)
+          )
+        )}
+      </View>
+
+      <Text style={styles.inputLabel}>Type d'etablissement</Text>
+      <View style={styles.optionRowStatic}>
+        {(filterOptions.establishmentTypes.length > 0
+          ? filterOptions.establishmentTypes
+          : ["restaurant", "hotel"]
+        ).map((type) =>
+          renderFilterChip(type, (filters.establishmentTypes || []).includes(type), () =>
+            toggleArrayFilter("establishmentTypes", type)
+          )
+        )}
+      </View>
+
+      <Text style={styles.inputLabel}>Cuisine</Text>
+      <View style={styles.optionRowStatic}>
+        {(filterOptions.cuisines.length > 0 ? filterOptions.cuisines.slice(0, 10) : ["francaise", "asiatique"]).map(
+          (cuisine) =>
+            renderFilterChip(cuisine, (filters.cuisines || []).includes(cuisine), () =>
+              toggleArrayFilter("cuisines", cuisine)
+            )
+        )}
+      </View>
+
+      <View style={styles.inputGrid}>
+        <View style={styles.inputGridItem}>
+          <Text style={styles.inputLabel}>Distance max (km)</Text>
+          <TextInput
+            style={styles.input}
+            keyboardType="numeric"
+            value={String(filters.radiusKm || 10)}
+            onChangeText={(value) =>
+              setFilters((prev) => ({
+                ...prev,
+                radiusKm: Number.isFinite(Number(value)) ? Number(value) : 10,
+              }))
+            }
+            placeholder="10"
+            placeholderTextColor="#9A8F8F"
+          />
+        </View>
+        <View style={[styles.inputGridItem, { marginRight: 0 }]}>
+          <Text style={styles.inputLabel}>Ville/Pays (texte)</Text>
+          <TextInput
+            style={styles.input}
+            value={filters.locationQuery || ""}
+            onChangeText={(value) => setFilters((prev) => ({ ...prev, locationQuery: value }))}
+            placeholder="Paris, France..."
+            placeholderTextColor="#9A8F8F"
+          />
+        </View>
+      </View>
+
+      <Text style={styles.inputLabel}>Budget</Text>
+      <View style={styles.optionRowStatic}>
+        {(filterOptions.priceRanges.length > 0 ? filterOptions.priceRanges : ["€", "€€", "€€€"]).map((range) =>
+          renderFilterChip(range, (filters.priceRanges || []).includes(range), () =>
+            toggleArrayFilter("priceRanges", range)
+          )
+        )}
+      </View>
+
+      <Text style={styles.inputLabel}>Distinctions Michelin</Text>
+      <View style={styles.optionRowStatic}>
+        {(filterOptions.distinctions.length > 0 ? filterOptions.distinctions.slice(0, 8) : ["1", "2", "3", "bib gourmand"]).map(
+          (distinction) =>
+            renderFilterChip(
+              distinction,
+              (filters.distinctions || []).includes(distinction),
+              () => toggleArrayFilter("distinctions", distinction)
+            )
+        )}
+      </View>
+
+      <Text style={styles.inputLabel}>Restaurants deja visites</Text>
+      <View style={styles.optionRowStatic}>
+        {filterOptions.visitedPreference.map((option) =>
+          renderFilterChip(
+            VISITED_LABELS[option] || option,
+            filters.visitedPreference === option,
+            () => setFilters((prev) => ({ ...prev, visitedPreference: option as "visited" | "new" | "all" }))
+          )
+        )}
+      </View>
+
+      <View style={styles.panelActions}>
+        <TouchableOpacity style={styles.secondaryButton} onPress={resetFilters}>
+          <Text style={styles.secondaryButtonText}>Reinitialiser</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.primaryButton} onPress={applyFilters}>
+          <Text style={styles.primaryButtonText}>
+            {applyingFilters ? "Chargement..." : "Appliquer filtres"}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+          <View style={styles.saveWrap}>
+            <TouchableOpacity style={styles.saveButton} onPress={createFilteredParcours}>
+              <Text style={styles.saveButtonText}>Creer et sauvegarder ce parcours</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+      </View>
+  );
+
   if (loading) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
@@ -303,6 +575,7 @@ export const ParcoursScreen = () => {
       <SafeAreaView style={styles.container}>
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           <Text style={styles.pageTitle}>Parcours en cours</Text>
+          {renderFiltersPanel()}
           <View style={styles.section}>
             <Text style={styles.sectionTitleUpper}>{fallback.inProgress.title.toUpperCase()}</Text>
             <Text style={styles.sectionSubtitle}>{fallback.inProgress.subtitle}</Text>
@@ -347,6 +620,7 @@ export const ParcoursScreen = () => {
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Text style={styles.pageTitle}>Parcours en cours</Text>
+        {renderFiltersPanel()}
 
         {inProgress && (
           <View style={styles.section}>
@@ -428,6 +702,24 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     marginBottom: 12,
+  },
+  filtersWrap: {
+    marginBottom: 20,
+  },
+  filtersToggle: {
+    alignSelf: "flex-start",
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#D8D1D1",
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 10,
+  },
+  filtersToggleText: {
+    color: "#514B4B",
+    fontSize: 10,
+    fontWeight: "700",
   },
   chip: {
     borderRadius: 999,

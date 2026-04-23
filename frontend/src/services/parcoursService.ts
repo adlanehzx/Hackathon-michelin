@@ -9,6 +9,8 @@ const API_URL =
 export interface ParcoursFilters {
   mode: "parcours" | "ponctuel";
   searchType?: "parcours" | "ponctuel";
+  countries?: string[];
+  cities?: string[];
   establishmentTypes?: string[];
   distinctions?: string[];
   occasions?: string[];
@@ -109,6 +111,10 @@ class ParcoursService {
   }
 
   async getFilterOptions(): Promise<{
+    countries: string[];
+    cities: string[];
+    establishmentTypes: string[];
+    visitedPreference: string[];
     cuisines: string[];
     priceRanges: string[];
     distinctions: string[];
@@ -117,6 +123,10 @@ class ParcoursService {
       const response = await axios.get(`${API_URL}/parcours/filters/options`);
       return (
         response.data.data || {
+          countries: [],
+          cities: [],
+          establishmentTypes: [],
+          visitedPreference: ["all", "visited", "new"],
           cuisines: [],
           priceRanges: [],
           distinctions: [],
@@ -125,6 +135,10 @@ class ParcoursService {
     } catch (error) {
       console.error("Erreur lors du chargement des options:", error);
       return {
+        countries: [],
+        cities: [],
+        establishmentTypes: [],
+        visitedPreference: ["all", "visited", "new"],
         cuisines: [],
         priceRanges: [],
         distinctions: [],

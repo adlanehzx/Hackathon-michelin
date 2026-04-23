@@ -6,6 +6,8 @@ type Mode = "parcours" | "ponctuel";
 interface ParcoursFilters {
   mode: Mode;
   searchType?: "parcours" | "ponctuel";
+  countries?: string[];
+  cities?: string[];
   establishmentTypes?: string[];
   distinctions?: string[];
   occasions?: string[];
@@ -268,6 +270,8 @@ const normalizeFilters = (body: Record<string, unknown>): ParcoursFilters => {
   return {
     mode: rawMode,
     searchType: rawMode,
+    countries: toStringArray(body.countries),
+    cities: toStringArray(body.cities),
     establishmentTypes: toStringArray(body.establishmentTypes),
     distinctions: toStringArray(body.distinctions),
     occasions: toStringArray(body.occasions),
@@ -300,6 +304,7 @@ const scoreRestaurant = (restaurant: RestaurantRecord, filters: ParcoursFilters)
   let score = 0;
 
   const cuisine = (restaurant.cuisine_type || "").toLowerCase();
+  const country = (restaurant.country || "").toLowerCase();
   const distinction =
     restaurant.michelin_award?.toLowerCase() ||
     (restaurant.michelin_stars ? `${restaurant.michelin_stars} star` : "");
@@ -308,6 +313,14 @@ const scoreRestaurant = (restaurant: RestaurantRecord, filters: ParcoursFilters)
   const chefLabel = (restaurant.chef_selection_label || "").toLowerCase();
 
   if (filters.cuisines && filters.cuisines.length > 0 && filters.cuisines.includes(cuisine)) {
+    score += 3;
+  }
+
+  if (
+    filters.countries &&
+    filters.countries.length > 0 &&
+    filters.countries.some((entry) => country.includes(entry))
+  ) {
     score += 3;
   }
 
@@ -392,6 +405,8 @@ const filterRestaurantsByPreferences = async (
     const searchableLocation = `${restaurant.city || ""} ${restaurant.area || ""} ${restaurant.country || ""}`.toLowerCase();
     const restaurantType = (restaurant.establishment_type || "restaurant").toLowerCase();
     const cuisineType = (restaurant.cuisine_type || "").toLowerCase();
+    const country = (restaurant.country || "").toLowerCase();
+    const city = (restaurant.city || restaurant.area || "").toLowerCase();
     const distinction = `${restaurant.michelin_award || ""} ${restaurant.michelin_stars || ""}`.toLowerCase();
     const occasions = toStringArray(restaurant.occasion_tags || []);
     const diets = toStringArray(restaurant.diet_options || []);
@@ -425,6 +440,16 @@ const filterRestaurantsByPreferences = async (
       !filters.establishmentTypes ||
       filters.establishmentTypes.length === 0 ||
       filters.establishmentTypes.some((entry) => restaurantType.includes(entry));
+
+    const matchesCountry =
+      !filters.countries ||
+      filters.countries.length === 0 ||
+      filters.countries.some((entry) => country.includes(entry));
+
+    const matchesCity =
+      !filters.cities ||
+      filters.cities.length === 0 ||
+      filters.cities.some((entry) => city.includes(entry));
 
     const matchesCuisine =
       !filters.cuisines ||
@@ -481,6 +506,8 @@ const filterRestaurantsByPreferences = async (
 
     return (
       matchesLocation &&
+      matchesCountry &&
+      matchesCity &&
       matchesType &&
       matchesCuisine &&
       matchesDistinction &&
@@ -925,6 +952,33 @@ export const getParcoursFilterOptions = async (_req: Request, res: Response) => 
 
     const restaurants = (data || []) as RestaurantRecord[];
 
+    const countries = Array.from(
+      new Set(
+        restaurants
+          .map((restaurant) => restaurant.country)
+          .filter((value): value is string => Boolean(value && value.length > 0))
+          .map((value) => value.trim())
+      )
+    ).sort();
+
+    const cities = Array.from(
+      new Set(
+        restaurants
+          .map((restaurant) => restaurant.city || restaurant.area)
+          .filter((value): value is string => Boolean(value && value.length > 0))
+          .map((value) => value.trim())
+      )
+    ).sort();
+
+    const establishmentTypes = Array.from(
+      new Set(
+        restaurants
+          .map((restaurant) => restaurant.establishment_type)
+          .filter((value): value is string => Boolean(value && value.length > 0))
+          .map((value) => value.trim().toLowerCase())
+      )
+    ).sort();
+
     const cuisines = Array.from(
       new Set(
         restaurants
@@ -953,7 +1007,9 @@ export const getParcoursFilterOptions = async (_req: Request, res: Response) => 
       success: true,
       data: {
         modes: ["parcours", "ponctuel"],
-        establishmentTypes: ["restaurant", "hotel"],
+        countries,
+        cities,
+        establishmentTypes,
         weather: ["soleil", "couvert", "both"],
         visitedPreference: ["all", "visited", "new"],
         cuisines,
