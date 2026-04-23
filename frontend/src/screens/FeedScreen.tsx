@@ -21,7 +21,7 @@ interface FeedScreenProps {
   onBack?: () => void;
 }
 
-const FeedScreen = ({ onBack }: FeedScreenProps) => {
+export const FeedScreen = ({ onBack }: FeedScreenProps) => {
   const { user } = React.useContext(AuthContext);
   const [videos, setVideos] = useState<FeedVideo[]>([]);
   const [loading, setLoading] = useState(false);
@@ -104,15 +104,14 @@ const FeedScreen = ({ onBack }: FeedScreenProps) => {
           {/* Auteur */}
           <View style={styles.authorRow}>
             {item.user_avatar && (
-              <Image
-                source={{ uri: item.user_avatar }}
-                style={styles.avatar}
-              />
+              <Image source={{ uri: item.user_avatar }} style={styles.avatar} />
             )}
             <View>
               <Text style={styles.authorName}>{item.username}</Text>
               {item.restaurant_name && (
-                <Text style={styles.restaurantName}>{item.restaurant_name}</Text>
+                <Text style={styles.restaurantName}>
+                  {item.restaurant_name}
+                </Text>
               )}
             </View>
           </View>
@@ -126,7 +125,9 @@ const FeedScreen = ({ onBack }: FeedScreenProps) => {
             >
               {item.tags.split(", ").map((tag, index) => (
                 <View key={index} style={styles.tagBadge}>
-                  <Text style={styles.tagText}>#{tag.split("(")[0].trim()}</Text>
+                  <Text style={styles.tagText}>
+                    #{tag.split("(")[0].trim()}
+                  </Text>
                 </View>
               ))}
             </ScrollView>
@@ -198,10 +199,7 @@ const FeedScreen = ({ onBack }: FeedScreenProps) => {
     return (
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyText}>Aucune vidéo à afficher</Text>
-        <TouchableOpacity
-          style={styles.refreshButton}
-          onPress={loadFeed}
-        >
+        <TouchableOpacity style={styles.refreshButton} onPress={loadFeed}>
           <Text style={styles.refreshButtonText}>Rafraîchir</Text>
         </TouchableOpacity>
       </View>
@@ -214,10 +212,7 @@ const FeedScreen = ({ onBack }: FeedScreenProps) => {
       <SafeAreaView style={styles.container}>
         <StatusBar barStyle="light-content" />
         <View style={styles.header}>
-          <TouchableOpacity 
-            style={styles.backButton}
-            onPress={onBack}
-          >
+          <TouchableOpacity style={styles.backButton} onPress={onBack}>
             <Text style={styles.backButtonText}>← Retour</Text>
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Feed Vidéos</Text>
@@ -252,9 +247,7 @@ const FeedScreen = ({ onBack }: FeedScreenProps) => {
         snapToAlignment="start"
         decelerationRate="fast"
         onMomentumScrollEnd={(event) => {
-          const index = Math.round(
-            event.nativeEvent.contentOffset.y / height
-          );
+          const index = Math.round(event.nativeEvent.contentOffset.y / height);
           setCurrentIndex(index);
         }}
       />

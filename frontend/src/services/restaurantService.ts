@@ -1,10 +1,39 @@
 import axios from "axios";
+import { Platform } from "react-native";
 
-const API_URL =
-  typeof window !== "undefined" &&
-  window.location.hostname.includes("localhost")
-    ? "http://localhost:3000/api"
-    : "http://backend:3000/api";
+const getApiUrl = () => {
+  const webUrl = process.env.EXPO_PUBLIC_API_URL_WEB;
+  const mobileUrl = process.env.EXPO_PUBLIC_API_URL_MOBILE;
+  const fallbackUrl = process.env.EXPO_PUBLIC_API_URL;
+
+  if (Platform.OS === "web") {
+    if (webUrl) {
+      return webUrl;
+    }
+
+    if (fallbackUrl) {
+      return fallbackUrl;
+    }
+
+    return "http://localhost:3000/api";
+  }
+
+  if (mobileUrl) {
+    return mobileUrl;
+  }
+
+  if (fallbackUrl) {
+    return fallbackUrl;
+  }
+
+  if (Platform.OS === "android") {
+    return "http://10.0.2.2:3000/api";
+  }
+
+  return "http://localhost:3000/api";
+};
+
+const API_URL = getApiUrl();
 
 /**
  * Structure des restaurants provenant de Supabase
@@ -82,7 +111,7 @@ class RestaurantService {
   async getRestaurantsByLocation(
     latitude: number,
     longitude: number,
-    distance: number = 50
+    distance: number = 50,
   ): Promise<Restaurant[]> {
     try {
       const response = await axios.get(`${API_URL}/restaurants/location`, {
@@ -102,7 +131,7 @@ class RestaurantService {
   async searchRestaurants(
     query: string,
     cuisineType?: string,
-    michelin?: number
+    michelin?: number,
   ): Promise<Restaurant[]> {
     try {
       const params: any = { query };

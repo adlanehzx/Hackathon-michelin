@@ -1,10 +1,39 @@
 import axios from "axios";
+import { Platform } from "react-native";
 
-const API_URL =
-  typeof window !== "undefined" &&
-  window.location.hostname.includes("localhost")
-    ? "http://localhost:3000/api"
-    : "http://backend:3000/api";
+const getApiUrl = () => {
+  const webUrl = process.env.EXPO_PUBLIC_API_URL_WEB;
+  const mobileUrl = process.env.EXPO_PUBLIC_API_URL_MOBILE;
+  const fallbackUrl = process.env.EXPO_PUBLIC_API_URL;
+
+  if (Platform.OS === "web") {
+    if (webUrl) {
+      return webUrl;
+    }
+
+    if (fallbackUrl) {
+      return fallbackUrl;
+    }
+
+    return "http://localhost:3000/api";
+  }
+
+  if (mobileUrl) {
+    return mobileUrl;
+  }
+
+  if (fallbackUrl) {
+    return fallbackUrl;
+  }
+
+  if (Platform.OS === "android") {
+    return "http://10.0.2.2:3000/api";
+  }
+
+  return "http://localhost:3000/api";
+};
+
+const API_URL = getApiUrl();
 
 export interface FeedVideo {
   video_id: string;
@@ -53,11 +82,11 @@ class FeedService {
   async getPersonalizedFeed(
     userId: string,
     limit = 10,
-    offset = 0
+    offset = 0,
   ): Promise<FeedVideo[]> {
     try {
       const response = await axios.get(
-        `${API_URL}/feed/feed/${userId}?limit=${limit}&offset=${offset}`
+        `${API_URL}/feed/feed/${userId}?limit=${limit}&offset=${offset}`,
       );
       return response.data.data || [];
     } catch (error) {
@@ -128,7 +157,7 @@ class FeedService {
   async getUserVideos(userId: string, limit = 20, offset = 0): Promise<any[]> {
     try {
       const response = await axios.get(
-        `${API_URL}/feed/user/${userId}?limit=${limit}&offset=${offset}`
+        `${API_URL}/feed/user/${userId}?limit=${limit}&offset=${offset}`,
       );
       return response.data.data || [];
     } catch (error) {
