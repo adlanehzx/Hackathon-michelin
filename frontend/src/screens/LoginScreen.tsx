@@ -7,8 +7,11 @@ import {
   StyleSheet,
   ActivityIndicator,
   Alert,
+  Image,
 } from "react-native";
 import { useAuth } from "../context/AuthContext";
+import EyeIcon from "../../assets/icons/oeil-mdp.png";
+import GoogleIcon from "../../assets/icons/google-icon.png";
 
 interface LoginScreenProps {
   onGoToRegister: () => void;
@@ -59,11 +62,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           autoCorrect={false}
           placeholderTextColor="#bbb"
         />
-        {email.length > 0 && (
-          <View style={styles.checkIcon}>
-            <Text style={styles.checkText}>✓</Text>
-          </View>
-        )}
       </View>
 
       {/* Champ mot de passe */}
@@ -82,7 +80,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           style={styles.eyeIcon}
           onPress={() => setShowPassword(!showPassword)}
         >
-          <Text style={styles.eyeText}>{showPassword ? "🙈" : "👁️"}</Text>
+          {showPassword ? (
+            <Image source={EyeIcon} resizeMode="contain" style={styles.eyeImage} />
+          ) : (
+            <View style={styles.eyeOffWrapper}>
+              <Image source={EyeIcon} resizeMode="contain" style={styles.eyeImage} />
+              <View style={styles.eyeOffSlash} />
+            </View>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -119,7 +124,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       <Text style={styles.orText}>ou</Text>
 
       <TouchableOpacity style={styles.socialButton}>
-        <Text style={styles.googleG}>G</Text>
+        <Image source={GoogleIcon} resizeMode="contain" style={styles.googleImage} />
         <Text style={styles.socialButtonText}>Continuer avec Google</Text>
       </TouchableOpacity>
     </View>
@@ -179,9 +184,23 @@ const styles = StyleSheet.create({
   eyeIcon: {
     padding: 4,
   },
-  eyeText: {
-    fontSize: 16,
-    color: "#999",
+  eyeImage: {
+    width: 20,
+    height: 20,
+  },
+  eyeOffWrapper: {
+    width: 20,
+    height: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  eyeOffSlash: {
+    position: "absolute",
+    width: 2,
+    height: 22,
+    backgroundColor: "#999",
+    transform: [{ rotate: "45deg" }],
+    borderRadius: 1,
   },
   forgotContainer: {
     alignSelf: "flex-end",
@@ -193,7 +212,7 @@ const styles = StyleSheet.create({
   },
   button: {
     width: "100%",
-    backgroundColor: "#111",
+    backgroundColor: "#C0012C",
     paddingVertical: 16,
     borderRadius: 30,
     alignItems: "center",
@@ -233,10 +252,9 @@ const styles = StyleSheet.create({
     marginBottom: 14,
     gap: 10,
   },
-  googleG: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#4285F4",
+  googleImage: {
+    width: 20,
+    height: 20,
   },
   socialButtonText: {
     fontSize: 15,

@@ -8,8 +8,11 @@ import {
   ActivityIndicator,
   Alert,
   ScrollView,
+  Image,
 } from "react-native";
 import { useAuth } from "../context/AuthContext";
+import EyeIcon from "../../assets/icons/oeil-mdp.png";
+import GoogleIcon from "../../assets/icons/google-icon.png";
 
 interface RegisterScreenProps {
   onGoToLogin: () => void;
@@ -140,7 +143,14 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
           style={styles.eyeIcon}
           onPress={() => setShowPassword(!showPassword)}
         >
-          <Text style={styles.eyeText}>{showPassword ? "🙈" : "👁️"}</Text>
+          {showPassword ? (
+            <Image source={EyeIcon} resizeMode="contain" style={styles.eyeImage} />
+          ) : (
+            <View style={styles.eyeOffWrapper}>
+              <Image source={EyeIcon} resizeMode="contain" style={styles.eyeImage} />
+              <View style={styles.eyeOffSlash} />
+            </View>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -160,9 +170,14 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
           style={styles.eyeIcon}
           onPress={() => setShowConfirmPassword(!showConfirmPassword)}
         >
-          <Text style={styles.eyeText}>
-            {showConfirmPassword ? "🙈" : "👁️"}
-          </Text>
+          {showConfirmPassword ? (
+            <Image source={EyeIcon} resizeMode="contain" style={styles.eyeImage} />
+          ) : (
+            <View style={styles.eyeOffWrapper}>
+              <Image source={EyeIcon} resizeMode="contain" style={styles.eyeImage} />
+              <View style={styles.eyeOffSlash} />
+            </View>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -192,7 +207,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
 
       {/* Bouton Google */}
       <TouchableOpacity style={styles.socialButton}>
-        <Text style={styles.googleG}>G</Text>
+        <Image source={GoogleIcon} resizeMode="contain" style={styles.googleImage} />
         <Text style={styles.socialButtonText}>Continuer avec Google</Text>
       </TouchableOpacity>
     </ScrollView>
@@ -253,13 +268,27 @@ const styles = StyleSheet.create({
   eyeIcon: {
     padding: 4,
   },
-  eyeText: {
-    fontSize: 16,
-    color: "#999",
+  eyeImage: {
+    width: 20,
+    height: 20,
+  },
+  eyeOffWrapper: {
+    width: 20,
+    height: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  eyeOffSlash: {
+    position: "absolute",
+    width: 2,
+    height: 22,
+    backgroundColor: "#999",
+    transform: [{ rotate: "45deg" }],
+    borderRadius: 1,
   },
   button: {
     width: "100%",
-    backgroundColor: "#111",
+    backgroundColor: "#C0012C",
     paddingVertical: 16,
     borderRadius: 30,
     alignItems: "center",
@@ -298,10 +327,9 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     gap: 10,
   },
-  googleG: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#4285F4",
+  googleImage: {
+    width: 20,
+    height: 20,
   },
   socialButtonText: {
     fontSize: 15,

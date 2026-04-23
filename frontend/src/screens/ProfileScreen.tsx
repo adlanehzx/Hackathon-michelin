@@ -1,15 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-  Image,
   Alert,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 import { useAuth } from "../context/AuthContext";
+import gamificationService from "../services/gamificationService";
 import { LoginScreen } from "./LoginScreen";
 import { ForgotPasswordScreen } from "./ForgotPasswordScreen";
 import { ResetPasswordScreen } from "./ResetPasswordScreen";
@@ -17,12 +18,13 @@ import { RegisterScreen } from "./RegisterScreen";
 
 type AuthView = "login" | "register" | "forgot" | "reset";
 
-const LoggedOutView: React.FC<{
+const AuthFlowView: React.FC<{
   authView: AuthView;
   setAuthView: (v: AuthView) => void;
   resetEmail: string;
   setResetEmail: (e: string) => void;
-}> = ({ authView, setAuthView, resetEmail, setResetEmail }) => {
+  onBack: () => void;
+}> = ({ authView, setAuthView, resetEmail, setResetEmail, onBack }) => {
   if (authView === "register")
     return <RegisterScreen onGoToLogin={() => setAuthView("login")} />;
 
@@ -53,8 +55,77 @@ const LoggedOutView: React.FC<{
   );
 };
 
+const LoggedOutView: React.FC<{ onConnect: () => void }> = ({ onConnect }) => {
+  return (
+    <ScrollView style={styles.page} contentContainerStyle={styles.pageContent}>
+      <Text style={styles.pageTitle}>Mon profil</Text>
+
+      <TouchableOpacity style={styles.connectButton} onPress={onConnect}>
+        <Text style={styles.connectButtonText}>Se connecter / S'inscrire</Text>
+      </TouchableOpacity>
+
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Aucun badge</Text>
+        <View style={styles.badgesRow}>
+          <View style={styles.badgePlaceholder} />
+          <View style={styles.badgePlaceholder} />
+          <View style={styles.badgePlaceholder} />
+        </View>
+        <Text style={styles.badgesDesc}>
+          Retrouves tous tes badges ici et découvre comment évoluer dans les
+          niveaux !
+        </Text>
+      </View>
+
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Mes favoris</Text>
+        </View>
+        <View style={styles.emptyCard}>
+          <Text style={styles.emptyText}>Aucun favoris pour le moment</Text>
+        </View>
+      </View>
+
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Mes parcours complétés</Text>
+        </View>
+        <View style={styles.emptyCard}>
+          <Text style={styles.emptyText}>Aucun parcours complété</Text>
+        </View>
+      </View>
+    </ScrollView>
+  );
+};
+
 const LoggedInView: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user, token, logout } = useAuth();
+  const [progress, setProgress] = useState<any>(null);
+  const [badges, setBadges] = useState<any[]>([]);
+  const [challenges, setChallenges] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchData = useCallback(async () => {
+    if (!token) return;
+    try {
+      const [prog, bdg, ch] = await Promise.all([
+        gamificationService.getMyProgress(token),
+        gamificationService.getMyBadges(token),
+        gamificationService.getMyChallenges(token),
+      ]);
+      setProgress(prog);
+      setBadges(bdg || []);
+      setChallenges(ch);
+    } catch (err) {
+      console.error("Erreur chargement profil:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const performLogout = async () => {
     try {
@@ -78,17 +149,21 @@ const LoggedInView: React.FC = () => {
   };
 
   const fullName = user ? `${user.prenom} ${user.nom.toUpperCase()}` : "";
+  const levelName = progress?.current_level?.name || "Curieux";
+  const hasBadges = badges.length > 0;
 
-  // Données mock — à remplacer par de vraies données API
-  const favoris = [{ id: "1", nom: "Fana", lieu: "Paris (18), France" }];
-  const parcours = [
-    { id: "1", nom: "Parcours mets et vins", lieu: "Paris, France" },
-    { id: "2", nom: "Parcours végétarien", lieu: "Deauville, France" },
-  ];
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#c0001a" />
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={styles.page} contentContainerStyle={styles.pageContent}>
-      <Text style={styles.pageTitle}>Profil</Text>
+      <Text style={styles.pageTitle}>Mon profil</Text>
+
       <View style={styles.profileHeader}>
         <View style={styles.avatarCircle}>
           <Text style={styles.avatarInitials}>
@@ -97,19 +172,31 @@ const LoggedInView: React.FC = () => {
         </View>
         <View style={styles.profileInfo}>
           <Text style={styles.profileName}>{fullName}</Text>
-          <Text style={styles.profileSub}>10 parcours complétés</Text>
+          <Text style={styles.profileSub}>Aucun parcours complété</Text>
           <View style={styles.badgeTag}>
-            <Text style={styles.badgeTagText}>EXPLORATEUR</Text>
+            <Text style={styles.badgeTagText}>{levelName.toUpperCase()}</Text>
           </View>
         </View>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Mes badges</Text>
+        <Text style={styles.cardTitle}>
+          {hasBadges ? "Mes badges" : "Aucun badge"}
+        </Text>
         <View style={styles.badgesRow}>
-          <View style={styles.badgePlaceholder} />
-          <View style={styles.badgePlaceholder} />
-          <View style={styles.badgePlaceholder} />
+          {hasBadges ? (
+            badges.slice(0, 3).map((b: any) => (
+              <View key={b.id} style={styles.badgeEarned}>
+                <Text style={styles.badgeEarnedText}>{b.name[0]}</Text>
+              </View>
+            ))
+          ) : (
+            <>
+              <View style={styles.badgePlaceholder} />
+              <View style={styles.badgePlaceholder} />
+              <View style={styles.badgePlaceholder} />
+            </>
+          )}
         </View>
         <Text style={styles.badgesDesc}>
           Retrouves tous tes badges ici et découvre comment évoluer dans les
@@ -123,43 +210,19 @@ const LoggedInView: React.FC = () => {
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Mes favoris</Text>
-          <TouchableOpacity>
-            <Text style={styles.sectionLink}>Voir tous</Text>
-          </TouchableOpacity>
         </View>
-        {favoris.map((item) => (
-          <View key={item.id} style={styles.listCard}>
-            <View style={styles.listImagePlaceholder} />
-            <View style={styles.listInfo}>
-              <Text style={styles.listName}>{item.nom}</Text>
-              <Text style={styles.listSub}>{item.lieu}</Text>
-            </View>
-            <TouchableOpacity style={styles.arrowButton}>
-              <Text style={styles.arrowText}>›</Text>
-            </TouchableOpacity>
-          </View>
-        ))}
+        <View style={styles.emptyCard}>
+          <Text style={styles.emptyText}>Aucun favoris pour le moment</Text>
+        </View>
       </View>
 
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Mes parcours complétés</Text>
-          <TouchableOpacity>
-            <Text style={styles.sectionLink}>Voir tous</Text>
-          </TouchableOpacity>
         </View>
-        {parcours.map((item) => (
-          <View key={item.id} style={styles.listCard}>
-            <View style={styles.listImagePlaceholder} />
-            <View style={styles.listInfo}>
-              <Text style={styles.listName}>{item.nom}</Text>
-              <Text style={styles.listSub}>{item.lieu}</Text>
-            </View>
-            <TouchableOpacity style={styles.arrowButton}>
-              <Text style={styles.arrowText}>›</Text>
-            </TouchableOpacity>
-          </View>
-        ))}
+        <View style={styles.emptyCard}>
+          <Text style={styles.emptyText}>Aucun parcours complété</Text>
+        </View>
       </View>
 
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
@@ -173,27 +236,33 @@ export const ProfileScreen: React.FC = () => {
   const { isSignedIn } = useAuth();
   const [authView, setAuthView] = useState<AuthView>("login");
   const [resetEmail, setResetEmail] = useState("");
+  const [showAuth, setShowAuth] = useState(false);
 
   if (isSignedIn) {
     return <LoggedInView />;
   }
 
-  return (
-    <View style={{ flex: 1, backgroundColor: "#fff" }}>
-      <LoggedOutView
-        authView={authView}
-        setAuthView={setAuthView}
-        resetEmail={resetEmail}
-        setResetEmail={setResetEmail}
-      />
-    </View>
-  );
+  if (showAuth) {
+    return (
+      <View style={{ flex: 1, backgroundColor: "#fff" }}>
+        <AuthFlowView
+          authView={authView}
+          setAuthView={setAuthView}
+          resetEmail={resetEmail}
+          setResetEmail={setResetEmail}
+          onBack={() => setShowAuth(false)}
+        />
+      </View>
+    );
+  }
+
+  return <LoggedOutView onConnect={() => setShowAuth(true)} />;
 };
 
 const styles = StyleSheet.create({
   page: {
     flex: 1,
-    backgroundColor: "#f0ede8",
+    backgroundColor: "#F5F1EE",
   },
   pageContent: {
     paddingHorizontal: 20,
@@ -356,6 +425,49 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: "#111",
     lineHeight: 20,
+  },
+
+  connectButton: {
+    backgroundColor: "#c0001a",
+    borderRadius: 30,
+    paddingVertical: 14,
+    alignItems: "center",
+    marginBottom: 24,
+  },
+  connectButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  emptyCard: {
+    backgroundColor: "#fff",
+    borderRadius: 14,
+    padding: 16,
+    marginBottom: 10,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: "#888",
+  },
+
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: "#F5F1EE",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  badgeEarned: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: "#c0001a",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  badgeEarnedText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 18,
   },
 
   logoutButton: {
