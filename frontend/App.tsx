@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { AuthProvider, useAuth } from "./src/context/AuthContext";
 import { RestaurationsScreen } from "./src/screens/RestaurationsScreen";
+import { FeedScreen } from "./src/screens/FeedScreen";
 import { HotellerieScreen } from "./src/screens/HotellerieScreen";
 import { CarteScreen } from "./src/screens/CarteScreen";
 import { ParcoursScreen } from "./src/screens/ParcoursScreen";
@@ -43,9 +44,11 @@ const Navigation = () => {
   }
 
   return (
-    <View style={styles.appContainer}>
-      <View style={styles.screenContainer}>
-        {activeTab === "restaurations" && <RestaurationsScreen />}
+    <View style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
+        {activeTab === "restaurations" && (
+          <RestaurationsScreen onOpenFeed={() => setActiveTab("feed")} />
+        )}
         {activeTab === "hotellerie" && <HotellerieScreen />}
         {activeTab === "carte" && <CarteScreen />}
         {activeTab === "parcours" && <ParcoursScreen />}
