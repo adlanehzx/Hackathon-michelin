@@ -7,6 +7,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   Alert,
+  ScrollView,
 } from "react-native";
 import authService from "../services/authService";
 
@@ -32,7 +33,9 @@ export const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({
 
     setIsLoading(true);
     try {
-      const response = await authService.forgotPassword({ email: normalizedEmail });
+      const response = await authService.forgotPassword({
+        email: normalizedEmail,
+      });
 
       Alert.alert("Code envoyé", response.message, [
         {
@@ -51,24 +54,37 @@ export const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      contentContainerStyle={styles.container}
+      keyboardShouldPersistTaps="handled"
+    >
       <Text style={styles.title}>Mot de passe oublié</Text>
       <Text style={styles.subtitle}>
         Saisis ton e-mail pour recevoir un code de 8 caractères.
       </Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="E-mail"
-        value={email}
-        onChangeText={setEmail}
-        editable={!isLoading}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        autoCorrect={false}
-        placeholderTextColor="#999"
-      />
+      {/* Email */}
+      <Text style={styles.label}>Adresse e-mail</Text>
+      <View style={styles.inputWrapper}>
+        <TextInput
+          style={styles.input}
+          placeholder="exemple@email.com"
+          value={email}
+          onChangeText={setEmail}
+          editable={!isLoading}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoCorrect={false}
+          placeholderTextColor="#bbb"
+        />
+        {email.length > 0 && (
+          <View style={styles.checkIcon}>
+            <Text style={styles.checkText}>✓</Text>
+          </View>
+        )}
+      </View>
 
+      {/* Bouton envoyer */}
       <TouchableOpacity
         style={[styles.button, isLoading && styles.buttonDisabled]}
         onPress={handleSubmit}
@@ -81,60 +97,94 @@ export const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({
         )}
       </TouchableOpacity>
 
+      {/* Déjà un code */}
       <TouchableOpacity
         onPress={() => onGoToResetPassword(normalizedEmail)}
         disabled={isLoading}
       >
-        <Text style={styles.link}>J'ai déjà reçu un code</Text>
+        <Text style={styles.alreadyText}>
+          J'ai déjà reçu un code →{" "}
+          <Text style={styles.alreadyLink}>Saisir le code</Text>
+        </Text>
       </TouchableOpacity>
 
+      {/* Retour connexion */}
       <TouchableOpacity onPress={onGoToLogin} disabled={isLoading}>
-        <Text style={styles.linkSecondary}>Retour à la connexion</Text>
+        <Text style={styles.loginText}>
+          Retour à la <Text style={styles.loginLink}>connexion</Text>
+        </Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: "#f8f9fa",
+    flexGrow: 1,
+    backgroundColor: "#fff",
     alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 20,
+    paddingHorizontal: 28,
+    paddingTop: 80,
+    paddingBottom: 40,
   },
   title: {
-    fontSize: 30,
+    fontSize: 28,
     fontWeight: "bold",
-    marginBottom: 8,
-    color: "#1a1a1a",
-    textAlign: "center",
+    color: "#111",
+    marginBottom: 12,
+    alignSelf: "center",
   },
   subtitle: {
-    fontSize: 15,
-    marginBottom: 24,
-    color: "#666",
+    fontSize: 14,
+    color: "#aaa",
     textAlign: "center",
     lineHeight: 21,
+    marginBottom: 36,
   },
-  input: {
+  label: {
+    alignSelf: "flex-start",
+    fontSize: 14,
+    color: "#333",
+    marginBottom: 8,
+  },
+  inputWrapper: {
     width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
     borderWidth: 1,
     borderColor: "#ddd",
-    padding: 14,
-    marginBottom: 14,
-    borderRadius: 10,
-    fontSize: 16,
-    color: "#333",
+    borderRadius: 30,
+    paddingHorizontal: 18,
     backgroundColor: "#fff",
+    marginBottom: 18,
+    height: 54,
+  },
+  input: {
+    flex: 1,
+    fontSize: 15,
+    color: "#333",
+    height: 54,
+  },
+  checkIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "#111",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  checkText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "bold",
   },
   button: {
     width: "100%",
-    backgroundColor: "#1a73e8",
-    paddingVertical: 14,
-    borderRadius: 10,
+    backgroundColor: "#111",
+    paddingVertical: 16,
+    borderRadius: 30,
     alignItems: "center",
-    marginTop: 8,
+    marginBottom: 20,
   },
   buttonDisabled: {
     opacity: 0.6,
@@ -144,16 +194,23 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
   },
-  link: {
-    marginTop: 18,
-    color: "#1a73e8",
+  alreadyText: {
     fontSize: 14,
-    fontWeight: "600",
-  },
-  linkSecondary: {
-    marginTop: 12,
     color: "#666",
+    marginBottom: 14,
+    textAlign: "center",
+  },
+  alreadyLink: {
+    fontWeight: "bold",
+    color: "#111",
+  },
+  loginText: {
     fontSize: 14,
-    fontWeight: "500",
+    color: "#666",
+    textAlign: "center",
+  },
+  loginLink: {
+    fontWeight: "bold",
+    color: "#111",
   },
 });

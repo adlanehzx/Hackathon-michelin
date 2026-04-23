@@ -7,6 +7,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   Alert,
+  ScrollView,
 } from "react-native";
 import authService from "../services/authService";
 
@@ -23,13 +24,20 @@ export const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = ({
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async () => {
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedCode = code.trim().toUpperCase();
 
-    if (!normalizedEmail || !normalizedCode || !newPassword || !confirmPassword) {
+    if (
+      !normalizedEmail ||
+      !normalizedCode ||
+      !newPassword ||
+      !confirmPassword
+    ) {
       Alert.alert("Erreur", "Veuillez remplir tous les champs");
       return;
     }
@@ -40,7 +48,10 @@ export const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = ({
     }
 
     if (newPassword.length < 8) {
-      Alert.alert("Erreur", "Le mot de passe doit contenir au moins 8 caractères");
+      Alert.alert(
+        "Erreur",
+        "Le mot de passe doit contenir au moins 8 caractères",
+      );
       return;
     }
 
@@ -71,56 +82,98 @@ export const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = ({
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Réinitialiser le mot de passe</Text>
+    <ScrollView
+      contentContainerStyle={styles.container}
+      keyboardShouldPersistTaps="handled"
+    >
+      <Text style={styles.title}>Réinitialisation</Text>
       <Text style={styles.subtitle}>
-        Saisis ton e-mail, le code reçu par email et ton nouveau mot de passe.
+        Saisis ton e-mail, le code reçu par e-mail et ton nouveau mot de passe.
       </Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="E-mail"
-        value={email}
-        onChangeText={setEmail}
-        editable={!isLoading}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        autoCorrect={false}
-        placeholderTextColor="#999"
-      />
+      {/* Email */}
+      <Text style={styles.label}>Adresse e-mail</Text>
+      <View style={styles.inputWrapper}>
+        <TextInput
+          style={styles.input}
+          placeholder="exemple@email.com"
+          value={email}
+          onChangeText={setEmail}
+          editable={!isLoading}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoCorrect={false}
+          placeholderTextColor="#bbb"
+        />
+        {email.length > 0 && (
+          <View style={styles.checkIcon}>
+            <Text style={styles.checkText}>✓</Text>
+          </View>
+        )}
+      </View>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Code à 8 caractères"
-        value={code}
-        onChangeText={setCode}
-        editable={!isLoading}
-        autoCapitalize="characters"
-        autoCorrect={false}
-        maxLength={8}
-        placeholderTextColor="#999"
-      />
+      {/* Code */}
+      <Text style={styles.label}>Code à 8 caractères</Text>
+      <View style={styles.inputWrapper}>
+        <TextInput
+          style={styles.input}
+          placeholder="ex: AB12CD34"
+          value={code}
+          onChangeText={setCode}
+          editable={!isLoading}
+          autoCapitalize="characters"
+          autoCorrect={false}
+          maxLength={8}
+          placeholderTextColor="#bbb"
+        />
+        {code.length === 8 && (
+          <View style={styles.checkIcon}>
+            <Text style={styles.checkText}>✓</Text>
+          </View>
+        )}
+      </View>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Nouveau mot de passe"
-        value={newPassword}
-        onChangeText={setNewPassword}
-        secureTextEntry
-        editable={!isLoading}
-        placeholderTextColor="#999"
-      />
+      {/* Nouveau mot de passe */}
+      <Text style={styles.label}>Nouveau mot de passe</Text>
+      <View style={styles.inputWrapper}>
+        <TextInput
+          style={styles.input}
+          placeholder="••••••••••••••"
+          value={newPassword}
+          onChangeText={setNewPassword}
+          secureTextEntry={!showPassword}
+          editable={!isLoading}
+          placeholderTextColor="#bbb"
+        />
+        <TouchableOpacity
+          style={styles.eyeIcon}
+          onPress={() => setShowPassword(!showPassword)}
+        >
+          <Text style={styles.eyeText}>{showPassword ? "◉" : "◎"}</Text>
+        </TouchableOpacity>
+      </View>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Confirmer le mot de passe"
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-        secureTextEntry
-        editable={!isLoading}
-        placeholderTextColor="#999"
-      />
+      {/* Confirmer mot de passe */}
+      <Text style={styles.label}>Confirmer le mot de passe</Text>
+      <View style={styles.inputWrapper}>
+        <TextInput
+          style={styles.input}
+          placeholder="••••••••••••••"
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          secureTextEntry={!showConfirmPassword}
+          editable={!isLoading}
+          placeholderTextColor="#bbb"
+        />
+        <TouchableOpacity
+          style={styles.eyeIcon}
+          onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+        >
+          <Text style={styles.eyeText}>{showConfirmPassword ? "◉" : "◎"}</Text>
+        </TouchableOpacity>
+      </View>
 
+      {/* Bouton */}
       <TouchableOpacity
         style={[styles.button, isLoading && styles.buttonDisabled]}
         onPress={handleSubmit}
@@ -133,53 +186,90 @@ export const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = ({
         )}
       </TouchableOpacity>
 
+      {/* Retour connexion */}
       <TouchableOpacity onPress={onGoToLogin} disabled={isLoading}>
-        <Text style={styles.link}>Retour à la connexion</Text>
+        <Text style={styles.loginText}>
+          Retour à la <Text style={styles.loginLink}>connexion</Text>
+        </Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: "#f8f9fa",
+    flexGrow: 1,
+    backgroundColor: "#fff",
     alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 20,
+    paddingHorizontal: 28,
+    paddingTop: 80,
+    paddingBottom: 40,
   },
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    marginBottom: 8,
-    color: "#1a1a1a",
-    textAlign: "center",
+    color: "#111",
+    marginBottom: 12,
+    alignSelf: "center",
   },
   subtitle: {
-    fontSize: 15,
-    marginBottom: 24,
-    color: "#666",
+    fontSize: 14,
+    color: "#aaa",
     textAlign: "center",
     lineHeight: 21,
+    marginBottom: 36,
   },
-  input: {
+  label: {
+    alignSelf: "flex-start",
+    fontSize: 14,
+    color: "#333",
+    marginBottom: 8,
+  },
+  inputWrapper: {
     width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
     borderWidth: 1,
     borderColor: "#ddd",
-    padding: 14,
-    marginBottom: 14,
-    borderRadius: 10,
-    fontSize: 16,
-    color: "#333",
+    borderRadius: 30,
+    paddingHorizontal: 18,
     backgroundColor: "#fff",
+    marginBottom: 18,
+    height: 54,
+  },
+  input: {
+    flex: 1,
+    fontSize: 15,
+    color: "#333",
+    height: 54,
+  },
+  checkIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "#111",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  checkText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  eyeIcon: {
+    padding: 8,
+  },
+  eyeText: {
+    fontSize: 18,
+    color: "#999",
   },
   button: {
     width: "100%",
-    backgroundColor: "#1a73e8",
-    paddingVertical: 14,
-    borderRadius: 10,
+    backgroundColor: "#111",
+    paddingVertical: 16,
+    borderRadius: 30,
     alignItems: "center",
-    marginTop: 8,
+    marginBottom: 20,
   },
   buttonDisabled: {
     opacity: 0.6,
@@ -189,10 +279,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
   },
-  link: {
-    marginTop: 20,
-    color: "#1a73e8",
+  loginText: {
     fontSize: 14,
-    fontWeight: "600",
+    color: "#666",
+    textAlign: "center",
+  },
+  loginLink: {
+    fontWeight: "bold",
+    color: "#111",
   },
 });

@@ -6,7 +6,6 @@ import {
   Text,
   StyleSheet,
   ActivityIndicator,
-  Image,
   Platform,
 } from "react-native";
 import { AuthProvider, useAuth } from "./src/context/AuthContext";
@@ -15,25 +14,20 @@ import { HotellerieScreen } from "./src/screens/HotellerieScreen";
 import { CarteScreen } from "./src/screens/CarteScreen";
 import { ParcoursScreen } from "./src/screens/ParcoursScreen";
 import { ProfileScreen } from "./src/screens/ProfileScreen";
-
-import RestaurantsIcon from "./assets/icons/Restaurants.png";
-import HotellerieIcon from "./assets/icons/Hotellerie.png";
-import CarteIcon from "./assets/icons/Carte.png";
-import ParcoursIcon from "./assets/icons/Parcours.png";
-import ProfileIcon from "./assets/icons/Profile.png";
+import { NavIcon, type TabIconName } from "./src/components/NavIcon";
 
 type TabName = "restaurations" | "hotellerie" | "carte" | "parcours" | "profil";
 
 const tabs: Array<{
   key: TabName;
   label: string;
-  icon: any;
+  icon: TabIconName;
 }> = [
-  { key: "restaurations", label: "Resto", icon: RestaurantsIcon },
-  { key: "hotellerie", label: "Hotels", icon: HotellerieIcon },
-  { key: "carte", label: "Carte", icon: CarteIcon },
-  { key: "parcours", label: "Parcours", icon: ParcoursIcon },
-  { key: "profil", label: "Profil", icon: ProfileIcon },
+  { key: "restaurations", label: "Resto", icon: "restaurations" },
+  { key: "hotellerie", label: "Hotels", icon: "hotellerie" },
+  { key: "carte", label: "Carte", icon: "carte" },
+  { key: "parcours", label: "Parcours", icon: "parcours" },
+  { key: "profil", label: "Profil", icon: "profil" },
 ];
 
 const Navigation = () => {
@@ -65,19 +59,14 @@ const Navigation = () => {
           return (
             <TouchableOpacity
               key={tab.key}
-              style={[styles.navButton, isActive && styles.navButtonActive]}
+              style={styles.navButton}
               onPress={() => setActiveTab(tab.key)}
               activeOpacity={0.85}
             >
               <View style={styles.iconFrame}>
-                <Image
-                  source={tab.icon}
-                  style={[styles.navIcon, isActive && styles.navIconActive]}
-                />
+                <NavIcon name={tab.icon} active={isActive} />
               </View>
-              <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>
-                {tab.label}
-              </Text>
+              <Text style={styles.navLabel}>{tab.label}</Text>
             </TouchableOpacity>
           );
         })}
@@ -126,28 +115,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 6,
     paddingVertical: 6,
-    borderTopWidth: 3,
-    borderTopColor: "transparent",
-  },
-  navButtonActive: {
-    borderTopColor: "#1a73e8",
   },
   iconFrame: {
-    width: 28,
-    height: 24,
+    width: 32,
+    height: 32,
     alignItems: "center",
     justifyContent: "center",
-  },
-  navIcon: {
-    width: 22,
-    height: 22,
-    resizeMode: "contain",
-    opacity: 0.78,
-  },
-  navIconActive: {
-    width: 24,
-    height: 24,
-    opacity: 1,
   },
   navLabel: {
     fontSize: 10,
@@ -155,8 +128,5 @@ const styles = StyleSheet.create({
     color: "#707070",
     fontWeight: "600",
     textAlign: "center",
-  },
-  navLabelActive: {
-    color: "#1a73e8",
   },
 });

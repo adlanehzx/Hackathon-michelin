@@ -2,14 +2,28 @@ import axios from "axios";
 import { Platform } from "react-native";
 
 const getApiUrl = () => {
-  const envUrl = process.env.EXPO_PUBLIC_API_URL;
-  if (envUrl) {
-    return envUrl;
+  const webUrl = process.env.EXPO_PUBLIC_API_URL_WEB;
+  const mobileUrl = process.env.EXPO_PUBLIC_API_URL_MOBILE;
+  const fallbackUrl = process.env.EXPO_PUBLIC_API_URL;
+
+  if (Platform.OS === "web") {
+    if (webUrl) {
+      return webUrl;
+    }
+
+    if (fallbackUrl) {
+      return fallbackUrl;
+    }
+
+    return "http://localhost:3000/api";
   }
 
-  if (Platform.OS === "web" && typeof window !== "undefined") {
-    const { protocol, hostname } = window.location;
-    return `${protocol}//${hostname}:3000/api`;
+  if (mobileUrl) {
+    return mobileUrl;
+  }
+
+  if (fallbackUrl) {
+    return fallbackUrl;
   }
 
   if (Platform.OS === "android") {
@@ -89,10 +103,7 @@ class AuthService {
     data: ForgotPasswordPayload,
   ): Promise<ForgotPasswordResponse> {
     try {
-      const response = await axios.post(
-        `${API_URL}/auth/forgot-password`,
-        data,
-      );
+      const response = await axios.post(`${API_URL}/auth/forgot-password`, data);
       return response.data;
     } catch (error: any) {
       throw error.response?.data || error;

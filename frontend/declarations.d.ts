@@ -26,5 +26,7 @@ declare module "*.webp" {
 declare const process: {
   env: {
     EXPO_PUBLIC_API_URL?: string;
+    EXPO_PUBLIC_API_URL_WEB?: string;
+    EXPO_PUBLIC_API_URL_MOBILE?: string;
   };
 };
