@@ -79,7 +79,8 @@ const FeedScreen = ({ onBack }: FeedScreenProps) => {
     });
   };
 
-  const renderVideoCard = ({ item }: { item: FeedVideo }) => (
+  // FIX 1 : `index` est maintenant reçu en paramètre (plus de dépendance à `currentIndex`)
+  const renderVideoCard = ({ item, index }: { item: FeedVideo; index: number }) => (
     <View style={styles.videoContainer}>
       {/* Thumbnail avec overlay sombre */}
       <Image
@@ -124,8 +125,8 @@ const FeedScreen = ({ onBack }: FeedScreenProps) => {
               showsHorizontalScrollIndicator={false}
               style={styles.tagsContainer}
             >
-              {item.tags.split(", ").map((tag, index) => (
-                <View key={index} style={styles.tagBadge}>
+              {item.tags.split(", ").map((tag, tagIndex) => (
+                <View key={tagIndex} style={styles.tagBadge}>
                   <Text style={styles.tagText}>#{tag.split("(")[0].trim()}</Text>
                 </View>
               ))}
@@ -162,11 +163,16 @@ const FeedScreen = ({ onBack }: FeedScreenProps) => {
             style={styles.actionButton}
             onPress={() => {
               handleSkip(item.video_id);
-              setCurrentIndex((prev) => prev + 1);
-              flatListRef.current?.scrollToIndex({
-                index: currentIndex + 1,
-                animated: true,
-              });
+              // FIX 2 : on utilise `index` (local) au lieu de `currentIndex` (stale closure)
+              // FIX 3 : vérification des bornes avant de scroller
+              const nextIndex = index + 1;
+              if (nextIndex < videos.length) {
+                setCurrentIndex(nextIndex);
+                flatListRef.current?.scrollToIndex({
+                  index: nextIndex,
+                  animated: true,
+                });
+              }
             }}
           >
             <Text style={styles.actionIcon}>⏭️</Text>
@@ -214,7 +220,7 @@ const FeedScreen = ({ onBack }: FeedScreenProps) => {
       <SafeAreaView style={styles.container}>
         <StatusBar barStyle="light-content" />
         <View style={styles.header}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.backButton}
             onPress={onBack}
           >
@@ -227,9 +233,10 @@ const FeedScreen = ({ onBack }: FeedScreenProps) => {
         </View>
 
         <ScrollView style={styles.scrollView}>
-          {videos.map((video) => (
+          {/* FIX 1 (suite) : on passe `index` à renderVideoCard dans la vue web aussi */}
+          {videos.map((video, index) => (
             <View key={video.video_id} style={styles.webVideoCard}>
-              {renderVideoCard({ item: video })}
+              {renderVideoCard({ item: video, index })}
             </View>
           ))}
         </ScrollView>

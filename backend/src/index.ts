@@ -8,8 +8,6 @@ import cors from "cors";
 import authRoutes from "./routes/authRoutes";
 import userRoutes from "./routes/userRoutes";
 import adminRoutes from "./routes/adminRoutes";
-import restaurantRoutes from "./routes/restaurantRoutes";
-import feedRoutes from "./routes/feedRoutes";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -37,8 +35,6 @@ app.get("/", (req: Request, res: Response) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/api/restaurants", restaurantRoutes);
-app.use("/api/feed", feedRoutes);
 
 // Start server
 app.listen(PORT, () => {
