@@ -83,7 +83,9 @@ export const CarteScreen = () => {
       try {
         setLoading(true);
         const data = await restaurantService.getAllRestaurants();
-        setRestaurants(data.filter((restaurant) => restaurant.lat && restaurant.lng));
+        setRestaurants(
+          data.filter((restaurant) => restaurant.lat && restaurant.lng),
+        );
       } catch (error) {
         console.error("Erreur:", error);
         Alert.alert("Erreur", "Impossible de charger les restaurants");
@@ -186,7 +188,9 @@ export const CarteScreen = () => {
               ))}
             </View>
 
-            <Text style={[styles.filterSectionTitle, { marginTop: 12 }]}>Type de cuisine</Text>
+            <Text style={[styles.filterSectionTitle, { marginTop: 12 }]}>
+              Type de cuisine
+            </Text>
             <TextInput
               style={styles.cuisineInput}
               placeholder="Ex: Gastronomie, Japonais…"
@@ -201,8 +205,12 @@ export const CarteScreen = () => {
       <View style={styles.contentArea}>
         <View style={styles.mapPlaceholder}>
           <Text style={styles.mapPlaceholderIcon}>🗺️</Text>
-          <Text style={styles.mapPlaceholderText}>Map non disponible sur web</Text>
-          <Text style={styles.mapSubtext}>La recherche et les filtres restent actifs.</Text>
+          <Text style={styles.mapPlaceholderText}>
+            Map non disponible sur web
+          </Text>
+          <Text style={styles.mapSubtext}>
+            La recherche et les filtres restent actifs.
+          </Text>
         </View>
 
         <FlatList
@@ -212,7 +220,10 @@ export const CarteScreen = () => {
           renderItem={({ item }) => (
             <View style={styles.card}>
               {item.image_url ? (
-                <Image source={{ uri: item.image_url }} style={styles.cardImage} />
+                <Image
+                  source={{ uri: item.image_url }}
+                  style={styles.cardImage}
+                />
               ) : (
                 <View style={styles.cardImagePlaceholder}>
                   <Text style={styles.cardImagePlaceholderIcon}>🍽️</Text>
@@ -223,10 +234,13 @@ export const CarteScreen = () => {
                   <Text style={styles.cardTitle} numberOfLines={1}>
                     {item.name}
                   </Text>
-                  <Text style={styles.cardBadge}>{getDistinctionLabel(item)}</Text>
+                  <Text style={styles.cardBadge}>
+                    {getDistinctionLabel(item)}
+                  </Text>
                 </View>
                 <Text style={styles.cardMeta} numberOfLines={1}>
-                  {[item.city, item.country].filter(Boolean).join(", ") || "Localisation inconnue"}
+                  {[item.city, item.country].filter(Boolean).join(", ") ||
+                    "Localisation inconnue"}
                 </Text>
                 {item.cuisine_type ? (
                   <Text style={styles.cardMeta} numberOfLines={1}>
