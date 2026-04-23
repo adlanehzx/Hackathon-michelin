@@ -19,7 +19,9 @@ services:
       - ./backend/tsconfig.json:/app/tsconfig.json
       - ./backend/.env:/app/.env
     networks:
-       frontend-web:
+      - michelin-network
+
+  frontend-web:
     build:
       context: ./frontend
       dockerfile: Dockerfile
@@ -72,9 +74,7 @@ services:
       - michelin-network
     environment:
       - EXPO_DEBUG=true
-      - REACT_NATIVE_PACKAGER_HOSTNAME=192.168.1.213
-    environment:
-      - EXPO_DEBUG=true
+      - REACT_NATIVE_PACKAGER_HOSTNAME=172.20.10.2
     restart: on-failure
 
 networks:
