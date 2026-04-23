@@ -98,6 +98,26 @@ class RestaurantService {
       throw error.response?.data || error;
     }
   }
+
+  async searchRestaurants(
+    query: string,
+    cuisineType?: string,
+    michelin?: number
+  ): Promise<Restaurant[]> {
+    try {
+      const params: any = { query };
+      if (cuisineType) params.cuisineType = cuisineType;
+      if (michelin) params.michelin = michelin;
+
+      const response = await axios.get(`${API_URL}/restaurants/search`, {
+        params,
+      });
+      return response.data.data || [];
+    } catch (error: any) {
+      console.error("Erreur lors de la recherche:", error);
+      return [];
+    }
+  }
 }
 
 export const restaurantService = new RestaurantService();

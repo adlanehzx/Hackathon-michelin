@@ -14,6 +14,7 @@ import { HotellerieScreen } from "./src/screens/HotellerieScreen";
 import { CarteScreen } from "./src/screens/CarteScreen";
 import { ParcoursScreen } from "./src/screens/ParcoursScreen";
 import { ProfileScreen } from "./src/screens/ProfileScreen";
+import FeedScreen from "./src/screens/FeedScreen";
 
 // Import des icons
 import RestaurantsIcon from "./assets/icons/Restaurants.png";
@@ -22,7 +23,7 @@ import CarteIcon from "./assets/icons/Carte.png";
 import ParcoursIcon from "./assets/icons/Parcours.png";
 import ProfileIcon from "./assets/icons/Profile.png";
 
-type TabName = "restaurations" | "hotellerie" | "carte" | "parcours" | "profil";
+type TabName = "restaurations" | "hotellerie" | "carte" | "parcours" | "profil" | "feed";
 
 const Navigation = () => {
   const { isLoading } = useAuth();
@@ -39,11 +40,12 @@ const Navigation = () => {
   return (
     <View style={{ flex: 1 }}>
       <View style={{ flex: 1 }}>
-        {activeTab === "restaurations" && <RestaurationsScreen />}
+        {activeTab === "restaurations" && <RestaurationsScreen onOpenFeed={() => setActiveTab("feed")} />}
         {activeTab === "hotellerie" && <HotellerieScreen />}
         {activeTab === "carte" && <CarteScreen />}
         {activeTab === "parcours" && <ParcoursScreen />}
         {activeTab === "profil" && <ProfileScreen />}
+        {activeTab === "feed" && <FeedScreen onBack={() => setActiveTab("restaurations")} />}
       </View>
 
       <View style={styles.bottomNav}>

@@ -11,6 +11,7 @@ import {
   Image,
   Alert,
   Platform,
+  TextInput,
 } from "react-native";
 import { restaurantService, Restaurant } from "../services/restaurantService";
 
@@ -32,6 +33,7 @@ if (Platform.OS !== "web") {
 
 export const CarteScreen = () => {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+  const [filteredRestaurants, setFilteredRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(
     null
@@ -40,12 +42,38 @@ export const CarteScreen = () => {
     latitude: number;
     longitude: number;
   } | null>(null);
-  const [mapRef, setMapRef] = useState<MapView | null>(null);
+  const [mapRef, setMapRef] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [filterMichelin, setFilterMichelin] = useState<number | null>(null);
+  const [filterCuisine, setFilterCuisine] = useState("");
 
   useEffect(() => {
     loadRestaurants();
     getUserLocation();
   }, []);
+
+  useEffect(() => {
+    performSearch();
+  }, [searchQuery, filterMichelin, filterCuisine, restaurants]);
+
+  const performSearch = async () => {
+    if (!searchQuery.trim()) {
+      setFilteredRestaurants(restaurants);
+      return;
+    }
+
+    try {
+      const results = await restaurantService.searchRestaurants(
+        searchQuery,
+        filterCuisine || undefined,
+        filterMichelin || undefined
+      );
+      setFilteredRestaurants(results);
+    } catch (error) {
+      console.error("Erreur recherche:", error);
+    }
+  };
 
   const getUserLocation = async () => {
     if (!Location || Platform.OS === "web") {
@@ -84,9 +112,9 @@ export const CarteScreen = () => {
   };
 
   const fitToAllMarkers = () => {
-    if (!mapRef || restaurants.length === 0) return;
+    if (!mapRef || filteredRestaurants.length === 0) return;
 
-    const coordinates = restaurants
+    const coordinates = filteredRestaurants
       .filter((r) => r.lat && r.lng)
       .map((r) => ({
         latitude: r.lat!,
@@ -111,38 +139,9 @@ export const CarteScreen = () => {
               📱 Carte disponible sur mobile
             </Text>
             <Text style={styles.mapSubtext}>
-              {restaurants.length} restaurants trouvés
+              {filteredRestaurants.length} restaurants trouvés
             </Text>
-            <Text style={styles.mapSubtext}>Utilisez l'onglet Liste pour les voir</Text>
           </View>
-          {/* Mini liste des restaurants */}
-          <ScrollView style={styles.restaurantMarkers}>
-            {restaurants.map((restaurant) => (
-              <TouchableOpacity
-                key={restaurant.id}
-                style={styles.markerButton}
-                onPress={() => setSelectedRestaurant(restaurant)}
-              >
-                <View
-                  style={[
-                    styles.marker,
-                    selectedRestaurant?.id === restaurant.id &&
-                      styles.markerActive,
-                  ]}
-                >
-                  <Text style={styles.markerText}>📍</Text>
-                </View>
-                <View style={styles.markerInfo}>
-                  <Text style={styles.markerTitle}>{restaurant.name}</Text>
-                  {restaurant.street && (
-                    <Text style={styles.markerAddress} numberOfLines={1}>
-                      {restaurant.street}
-                    </Text>
-                  )}
-                </View>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
 
           {selectedRestaurant && (
             <View style={styles.popup}>
@@ -212,7 +211,7 @@ export const CarteScreen = () => {
           )}
 
           {/* Marqueurs des restaurants */}
-          {restaurants
+          {filteredRestaurants
             .filter((restaurant) => restaurant.lat && restaurant.lng)
             .map((restaurant) => (
               <Marker
@@ -289,11 +288,62 @@ export const CarteScreen = () => {
   return (
     <View style={styles.container}>
       {/* En-tête */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Carte</Text>
-        <Text style={styles.subtitle}>
-          {restaurants.length} restaurants disponibles
-        </Text>
+      {/* Barre de recherche */}
+      <View style={styles.searchContainer}>
+        <View style={styles.searchBar}>
+          <Text style={styles.searchIcon}>🔍</Text>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Nom de restaurant, parcours..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholderTextColor="#999"
+          />
+          <TouchableOpacity
+            style={styles.filterButton}
+            onPress={() => setShowFilters(!showFilters)}
+          >
+            <Text style={styles.filterIcon}>⚙️</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Filtres */}
+        {showFilters && (
+          <View style={styles.filtersPanel}>
+            <View style={styles.filterRow}>
+              <Text style={styles.filterLabel}>Étoiles Michelin:</Text>
+              <View style={styles.filterButtons}>
+                {[0, 1, 2, 3].map((star) => (
+                  <TouchableOpacity
+                    key={star}
+                    style={[
+                      styles.starButton,
+                      filterMichelin === star && styles.starButtonActive,
+                    ]}
+                    onPress={() =>
+                      setFilterMichelin(filterMichelin === star ? null : star)
+                    }
+                  >
+                    <Text style={styles.starButtonText}>
+                      {star === 0 ? "Tous" : "⭐".repeat(star)}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            <View style={styles.filterRow}>
+              <Text style={styles.filterLabel}>Cuisine:</Text>
+              <TextInput
+                style={styles.cuisineInput}
+                placeholder="Ex: Gastronomie, Bio..."
+                value={filterCuisine}
+                onChangeText={setFilterCuisine}
+                placeholderTextColor="#ccc"
+              />
+            </View>
+          </View>
+        )}
       </View>
 
       {/* Carte */}
@@ -558,5 +608,89 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     marginTop: 6,
     fontStyle: "italic",
+  },
+
+  // Search Bar Styles
+  searchContainer: {
+    backgroundColor: "#fff",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
+  },
+  searchBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f5f5f5",
+    borderRadius: 25,
+    paddingHorizontal: 14,
+    height: 44,
+    marginBottom: 12,
+  },
+  searchIcon: {
+    fontSize: 18,
+    marginRight: 10,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    color: "#000",
+    padding: 0,
+  },
+  filterButton: {
+    padding: 8,
+  },
+  filterIcon: {
+    fontSize: 18,
+  },
+
+  // Filters Panel Styles
+  filtersPanel: {
+    backgroundColor: "#fafafa",
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: "#f0f0f0",
+  },
+  filterRow: {
+    marginBottom: 14,
+  },
+  filterLabel: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 8,
+  },
+  filterButtons: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  starButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+  },
+  starButtonActive: {
+    backgroundColor: "#E4000F",
+    borderColor: "#E4000F",
+  },
+  starButtonText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#333",
+  },
+  cuisineInput: {
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+    color: "#000",
   },
 });

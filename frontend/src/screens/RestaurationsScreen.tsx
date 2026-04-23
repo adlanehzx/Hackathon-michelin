@@ -11,7 +11,11 @@ import {
 } from "react-native";
 import { restaurantService, Restaurant } from "../services/restaurantService";
 
-export const RestaurationsScreen = () => {
+interface RestaurationsScreenProps {
+  onOpenFeed?: () => void;
+}
+
+export const RestaurationsScreen = ({ onOpenFeed }: RestaurationsScreenProps) => {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(
@@ -81,10 +85,18 @@ export const RestaurationsScreen = () => {
     <View style={styles.container}>
       {/* En-tête */}
       <View style={styles.header}>
-        <Text style={styles.title}>Restaurations</Text>
-        <Text style={styles.subtitle}>
-          {restaurants.length} restaurants disponibles
-        </Text>
+        <View style={styles.headerContent}>
+          <Text style={styles.title}>Restaurations</Text>
+          <Text style={styles.subtitle}>
+            {restaurants.length} restaurants disponibles
+          </Text>
+        </View>
+        <TouchableOpacity 
+          style={styles.feedButton}
+          onPress={onOpenFeed}
+        >
+          <Text style={styles.feedButtonText}>🎬 Feed</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Liste */}
@@ -155,6 +167,24 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: "#f0f0f0",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+  },
+  headerContent: {
+    flex: 1,
+  },
+  feedButton: {
+    backgroundColor: "#E4000F",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginTop: 4,
+  },
+  feedButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 14,
   },
   title: {
     fontSize: 24,

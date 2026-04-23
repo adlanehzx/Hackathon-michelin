@@ -129,3 +129,53 @@ export const getRestaurantsByLocation = async (
     });
   }
 };
+
+export const searchRestaurants = async (req: Request, res: Response) => {
+  try {
+    const { query, cuisineType, michelin } = req.query;
+
+    if (!query || typeof query !== "string") {
+      return res.status(400).json({
+        success: false,
+        message: "Le paramètre query est requis",
+      });
+    }
+
+    let qBuilder = supabase
+      .from("restaurants")
+      .select("*")
+      .or(`name.ilike.%${query}%,cuisine_type.ilike.%${query}%,area.ilike.%${query}%`);
+
+    if (cuisineType && typeof cuisineType === "string") {
+      qBuilder = qBuilder.ilike("cuisine_type", `%${cuisineType}%`);
+    }
+
+    if (michelin && typeof michelin === "string") {
+      const michelinValue = parseInt(michelin);
+      if (!isNaN(michelinValue)) {
+        qBuilder = qBuilder.eq("michelin_stars", michelinValue);
+      }
+    }
+
+    const { data, error } = await qBuilder.order("name", { ascending: true });
+
+    if (error) {
+      return res.status(500).json({
+        success: false,
+        message: "Erreur lors de la recherche",
+        error: error.message,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: data || [],
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: "Erreur serveur",
+      error: error.message,
+    });
+  }
+};
