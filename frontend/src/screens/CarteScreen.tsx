@@ -5,10 +5,6 @@ import {
   Image,
   StyleSheet,
   ActivityIndicator,
-  Dimensions,
-  FlatList,
-  ScrollView,
-
   TouchableOpacity,
   Alert,
   Platform,
@@ -20,8 +16,6 @@ import {
   getRestaurantPinKind,
 } from "../components/RestaurantPin";
 
-const { width, height } = Dimensions.get("window");
-
 // Conditional imports to avoid web errors
 let MapView: any = null;
 let Marker: any = null;
@@ -29,11 +23,20 @@ let PROVIDER_GOOGLE: any = null;
 let Location: any = null;
 
 if (Platform.OS !== "web") {
-  const maps = require("react-native-maps");
-  MapView = maps.default;
-  Marker = maps.Marker;
-  PROVIDER_GOOGLE = maps.PROVIDER_GOOGLE;
-  Location = require("expo-location");
+  try {
+    const maps = require("react-native-maps");
+    MapView = maps.default;
+    Marker = maps.Marker;
+    PROVIDER_GOOGLE = maps.PROVIDER_GOOGLE;
+  } catch (error) {
+    console.warn("react-native-maps non disponible:", error);
+  }
+
+  try {
+    Location = require("expo-location");
+  } catch (error) {
+    console.warn("expo-location non disponible:", error);
+  }
 }
 
 type MichelinFilter = "all" | "selected" | "bib" | "star";
@@ -172,6 +175,14 @@ export const CarteScreen = () => {
     setLoading(true);
 
     try {
+      if (Platform.OS === "web" || !MapView || !Marker) {
+        const data = await restaurantService.getAllRestaurants();
+        setRestaurants(
+          data.filter((restaurant) => restaurant.lat && restaurant.lng),
+        );
+        return;
+      }
+
       const location = await getUserLocation();
       const region = location
         ? {
@@ -414,16 +425,16 @@ export const CarteScreen = () => {
 
   // ── Map ────────────────────────────────────────────────────────────────────
   const renderMap = () => {
-    if (Platform.OS === "web") {
+    if (Platform.OS === "web" || !MapView || !Marker) {
       return (
         <View style={styles.mapContainer}>
           <View style={styles.mapPlaceholder}>
             <Text style={styles.mapPlaceholderIcon}>🗺️</Text>
             <Text style={styles.mapPlaceholderText}>
-              Carte disponible sur mobile
+              Map non disponible sur web
             </Text>
             <Text style={styles.mapSubtext}>
-              {filteredRestaurants.length} restaurants trouvés
+              Le reste de la page (recherche, filtres, popup) reste actif.
             </Text>
           </View>
           <RestaurantPopup />
