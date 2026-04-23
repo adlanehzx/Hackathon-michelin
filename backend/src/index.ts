@@ -10,6 +10,10 @@ import userRoutes from "./routes/userRoutes";
 import adminRoutes from "./routes/adminRoutes";
 import restaurantRoutes from "./routes/restaurantRoutes";
 import feedRoutes from "./routes/feedRoutes";
+import challengeRoutes from "./routes/challengeRoutes";
+import badgeRoutes, { userBadgesRouter } from "./routes/badgeRoutes";
+import levelRoutes from "./routes/levelRoutes";
+import progressRoutes, { userProgressRouter } from "./routes/progressRoutes";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -39,6 +43,12 @@ app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/restaurants", restaurantRoutes);
 app.use("/api/feed", feedRoutes);
+app.use("/api/challenges", challengeRoutes);
+app.use("/api/badges", badgeRoutes);
+app.use("/api/levels", levelRoutes);
+app.use("/api/progress", progressRoutes);
+app.use("/api/users", userBadgesRouter);
+app.use("/api/users", userProgressRouter);
 
 // Start server
 app.listen(PORT, () => {

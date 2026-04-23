@@ -6,7 +6,7 @@ import {
   Text,
   StyleSheet,
   ActivityIndicator,
-  Image,
+  Platform,
 } from "react-native";
 import { AuthProvider, useAuth } from "./src/context/AuthContext";
 import { RestaurationsScreen } from "./src/screens/RestaurationsScreen";
@@ -14,16 +14,21 @@ import { HotellerieScreen } from "./src/screens/HotellerieScreen";
 import { CarteScreen } from "./src/screens/CarteScreen";
 import { ParcoursScreen } from "./src/screens/ParcoursScreen";
 import { ProfileScreen } from "./src/screens/ProfileScreen";
-import FeedScreen from "./src/screens/FeedScreen";
-
-// Import des icons
-import RestaurantsIcon from "./assets/icons/Restaurants.png";
-import HotellerieIcon from "./assets/icons/Hotellerie.png";
-import CarteIcon from "./assets/icons/Carte.png";
-import ParcoursIcon from "./assets/icons/Parcours.png";
-import ProfileIcon from "./assets/icons/Profile.png";
+import { NavIcon, type TabIconName } from "./src/components/NavIcon";
 
 type TabName = "restaurations" | "hotellerie" | "carte" | "parcours" | "profil" | "feed";
+
+const tabs: Array<{
+  key: TabName;
+  label: string;
+  icon: TabIconName;
+}> = [
+  { key: "restaurations", label: "Resto", icon: "restaurations" },
+  { key: "hotellerie", label: "Hotels", icon: "hotellerie" },
+  { key: "carte", label: "Carte", icon: "carte" },
+  { key: "parcours", label: "Parcours", icon: "parcours" },
+  { key: "profil", label: "Profil", icon: "profil" },
+];
 
 const Navigation = () => {
   const { isLoading } = useAuth();
@@ -31,7 +36,7 @@ const Navigation = () => {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" />
       </View>
     );
@@ -49,95 +54,23 @@ const Navigation = () => {
       </View>
 
       <View style={styles.bottomNav}>
-        <TouchableOpacity
-          style={[
-            styles.navButton,
-            activeTab === "restaurations" && styles.navButtonActive,
-          ]}
-          onPress={() => setActiveTab("restaurations")}
-        >
-          <Image source={RestaurantsIcon} style={styles.navIcon} />
-          <Text
-            style={[
-              styles.navLabel,
-              activeTab === "restaurations" && styles.navLabelActive,
-            ]}
-          >
-            Restaurations
-          </Text>
-        </TouchableOpacity>
+        {tabs.map((tab) => {
+          const isActive = activeTab === tab.key;
 
-        <TouchableOpacity
-          style={[
-            styles.navButton,
-            activeTab === "hotellerie" && styles.navButtonActive,
-          ]}
-          onPress={() => setActiveTab("hotellerie")}
-        >
-          <Image source={HotellerieIcon} style={styles.navIcon} />
-          <Text
-            style={[
-              styles.navLabel,
-              activeTab === "hotellerie" && styles.navLabelActive,
-            ]}
-          >
-            Hotellerie
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[
-            styles.navButton,
-            activeTab === "carte" && styles.navButtonActive,
-          ]}
-          onPress={() => setActiveTab("carte")}
-        >
-          <Image source={CarteIcon} style={styles.navIcon} />
-          <Text
-            style={[
-              styles.navLabel,
-              activeTab === "carte" && styles.navLabelActive,
-            ]}
-          >
-            Carte
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[
-            styles.navButton,
-            activeTab === "parcours" && styles.navButtonActive,
-          ]}
-          onPress={() => setActiveTab("parcours")}
-        >
-          <Image source={ParcoursIcon} style={styles.navIcon} />
-          <Text
-            style={[
-              styles.navLabel,
-              activeTab === "parcours" && styles.navLabelActive,
-            ]}
-          >
-            Parcours
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[
-            styles.navButton,
-            activeTab === "profil" && styles.navButtonActive,
-          ]}
-          onPress={() => setActiveTab("profil")}
-        >
-          <Image source={ProfileIcon} style={styles.navIcon} />
-          <Text
-            style={[
-              styles.navLabel,
-              activeTab === "profil" && styles.navLabelActive,
-            ]}
-          >
-            Profil
-          </Text>
-        </TouchableOpacity>
+          return (
+            <TouchableOpacity
+              key={tab.key}
+              style={styles.navButton}
+              onPress={() => setActiveTab(tab.key)}
+              activeOpacity={0.85}
+            >
+              <View style={styles.iconFrame}>
+                <NavIcon name={tab.icon} active={isActive} />
+              </View>
+              <Text style={styles.navLabel}>{tab.label}</Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
 
       <StatusBar style="auto" />
@@ -146,7 +79,6 @@ const Navigation = () => {
 };
 
 export default function App() {
-  console.log("App rendering");
   return (
     <AuthProvider>
       <Navigation />
@@ -155,37 +87,47 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
+  appContainer: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+  screenContainer: {
+    flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   bottomNav: {
     flexDirection: "row",
+    alignItems: "flex-end",
     borderTopWidth: 1,
-    borderTopColor: "#e0e0e0",
+    borderTopColor: "#ececec",
     backgroundColor: "#fff",
-    paddingBottom: 8,
+    paddingTop: 8,
+    paddingBottom: Platform.OS === "ios" ? 18 : 10,
+    paddingHorizontal: 6,
+    minHeight: 78,
   },
   navButton: {
     flex: 1,
-    paddingVertical: 8,
     alignItems: "center",
     justifyContent: "center",
-    gap: 4,
+    gap: 6,
+    paddingVertical: 6,
   },
-  navButtonActive: {
-    borderTopWidth: 4,
-    borderTopColor: "#1a73e8",
-  },
-  navIcon: {
-    width: 28,
-    height: 28,
-    resizeMode: "contain",
+  iconFrame: {
+    width: 32,
+    height: 32,
+    alignItems: "center",
+    justifyContent: "center",
   },
   navLabel: {
-    fontSize: 11,
-    color: "#666",
-    fontWeight: "500",
+    fontSize: 10,
+    lineHeight: 12,
+    color: "#707070",
+    fontWeight: "600",
     textAlign: "center",
-  },
-  navLabelActive: {
-    color: "#1a73e8",
-    fontWeight: "bold",
   },
 });
