@@ -16,7 +16,7 @@ import { ParcoursScreen } from "./src/screens/ParcoursScreen";
 import { ProfileScreen } from "./src/screens/ProfileScreen";
 import { NavIcon, type TabIconName } from "./src/components/NavIcon";
 
-type TabName = "restaurations" | "hotellerie" | "carte" | "parcours" | "profil";
+type TabName = "restaurations" | "hotellerie" | "carte" | "parcours" | "profil" | "feed";
 
 const tabs: Array<{
   key: TabName;
@@ -43,13 +43,14 @@ const Navigation = () => {
   }
 
   return (
-    <View style={styles.appContainer}>
-      <View style={styles.screenContainer}>
-        {activeTab === "restaurations" && <RestaurationsScreen />}
+    <View style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
+        {activeTab === "restaurations" && <RestaurationsScreen onOpenFeed={() => setActiveTab("feed")} />}
         {activeTab === "hotellerie" && <HotellerieScreen />}
         {activeTab === "carte" && <CarteScreen />}
         {activeTab === "parcours" && <ParcoursScreen />}
         {activeTab === "profil" && <ProfileScreen />}
+        {activeTab === "feed" && <FeedScreen onBack={() => setActiveTab("restaurations")} />}
       </View>
 
       <View style={styles.bottomNav}>
