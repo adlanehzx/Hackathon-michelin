@@ -31,3 +31,16 @@ export const BackArrowIcon: React.FC<IconProps> = ({ width = 32, height = 32 }) 
 export const CaretRightIcon: React.FC<IconProps> = ({ width = 25, height = 25 }) => (
   <SvgXml xml={CARET_RIGHT_XML} width={width} height={height} />
 );
+
+const LEVEL_STAR_XML = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M10 1L12.47 6.6L18.5 7.35L14 11.52L15.18 17.5L10 14.67L4.82 17.5L6 11.52L1.5 7.35L7.53 6.6L10 1Z" fill="#FFB800" stroke="#E5A600" stroke-width="0.8" stroke-linejoin="round"/>
+</svg>`;
+
+interface LevelIconProps {
+  width?: number;
+  height?: number;
+}
+
+export const LevelStarIcon: React.FC<LevelIconProps> = ({ width = 20, height = 20 }) => (
+  <SvgXml xml={LEVEL_STAR_XML} width={width} height={height} />
+);

@@ -29,8 +29,18 @@ class GamificationService {
     return res.data.data;
   }
 
+  async getAllBadges() {
+    const res = await axios.get(`${API_URL}/badges`);
+    return res.data.data;
+  }
+
   async getMyBadges(token: string) {
     const res = await axios.get(`${API_URL}/badges/me`, authHeaders(token));
+    return res.data.data;
+  }
+
+  async getAllLevels() {
+    const res = await axios.get(`${API_URL}/levels`);
     return res.data.data;
   }
 

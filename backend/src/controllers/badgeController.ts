@@ -15,12 +15,16 @@ export const getAllBadges = async (req: Request, res: Response) => {
       (badges || []).map(async (badge: any) => {
         const { data: requirements } = await supabase
           .from("badge_requirements")
-          .select("challenge_id, challenges(id, name, difficulty, xp_reward)")
+          .select("challenge_id, challenges(id, name, difficulty, xp_reward, challenge_categories(id, name, icon_url))")
           .eq("badge_id", badge.id);
+
+        const challenges = (requirements || []).map((r: any) => r.challenges);
+        const category = challenges[0]?.challenge_categories || null;
 
         return {
           ...badge,
-          required_challenges: (requirements || []).map((r: any) => r.challenges),
+          required_challenges: challenges,
+          category,
         };
       })
     );
