@@ -13,6 +13,8 @@ import { useAuth } from "../context/AuthContext";
 import gamificationService from "../services/gamificationService";
 import { BackArrowIcon } from "../components/SvgIcons";
 
+const FIGTREE_FONT = "Figtree-Medium";
+
 export const BADGE_IMAGES: Record<string, ImageSourcePropType> = {
   firework: require("../../assets/badges/firework.png"),
   medal: require("../../assets/badges/medal.png"),
@@ -260,9 +262,10 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   headerTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "700",
     color: "#0C0C0C",
+    fontFamily: FIGTREE_FONT,
   },
   scrollView: {
     flex: 1,
@@ -293,12 +296,14 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#0C0C0C",
     marginBottom: 8,
+    fontFamily: FIGTREE_FONT,
   },
   heroDescription: {
-    fontSize: 15,
+    fontSize: 14,
     color: "#6B6360",
     textAlign: "center",
-    lineHeight: 22,
+    lineHeight: 20,
+    fontFamily: FIGTREE_FONT,
   },
 
   progressSection: {
@@ -312,6 +317,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#0C0C0C",
     marginBottom: 12,
+    fontFamily: FIGTREE_FONT,
   },
   progressBarContainer: {
     position: "relative",
@@ -345,6 +351,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#A59F9A",
     textAlign: "right",
+    fontFamily: FIGTREE_FONT,
   },
 
   badgesSection: {
@@ -356,6 +363,7 @@ const styles = StyleSheet.create({
     color: "#A59F9A",
     letterSpacing: 1.5,
     marginBottom: 20,
+    fontFamily: FIGTREE_FONT,
   },
   badgesGrid: {
     flexDirection: "row",
@@ -398,6 +406,7 @@ const styles = StyleSheet.create({
     color: "#3F362F",
     textAlign: "center",
     lineHeight: 16,
+    fontFamily: FIGTREE_FONT,
   },
   badgeNameLocked: {
     color: "#A59F9A",
@@ -430,14 +439,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   finalBadgeName: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "700",
     color: "#0C0C0C",
     marginBottom: 4,
+    fontFamily: FIGTREE_FONT,
   },
   finalBadgeDesc: {
     fontSize: 14,
     color: "#6B6360",
     lineHeight: 20,
+    fontFamily: FIGTREE_FONT,
   },
 });

@@ -11,6 +11,8 @@ import {
 } from "react-native";
 import authService from "../services/authService";
 
+const FIGTREE_FONT = "Figtree-Medium";
+
 interface ResetPasswordScreenProps {
   onGoToLogin: () => void;
   initialEmail?: string;
@@ -211,6 +213,7 @@ const styles = StyleSheet.create({
     color: "#111",
     marginBottom: 12,
     alignSelf: "center",
+    fontFamily: FIGTREE_FONT,
   },
   subtitle: {
     fontSize: 14,
@@ -218,12 +221,14 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 21,
     marginBottom: 36,
+    fontFamily: FIGTREE_FONT,
   },
   label: {
     alignSelf: "flex-start",
     fontSize: 14,
     color: "#333",
     marginBottom: 8,
+    fontFamily: FIGTREE_FONT,
   },
   inputWrapper: {
     width: "100%",
@@ -242,6 +247,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#333",
     height: 54,
+    fontFamily: FIGTREE_FONT,
   },
   checkIcon: {
     width: 28,
@@ -255,6 +261,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 14,
     fontWeight: "bold",
+    fontFamily: FIGTREE_FONT,
   },
   eyeIcon: {
     padding: 8,
@@ -262,6 +269,7 @@ const styles = StyleSheet.create({
   eyeText: {
     fontSize: 18,
     color: "#999",
+    fontFamily: FIGTREE_FONT,
   },
   button: {
     width: "100%",
@@ -278,14 +286,17 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
+    fontFamily: FIGTREE_FONT,
   },
   loginText: {
     fontSize: 14,
     color: "#666",
     textAlign: "center",
+    fontFamily: FIGTREE_FONT,
   },
   loginLink: {
     fontWeight: "bold",
     color: "#111",
+    fontFamily: FIGTREE_FONT,
   },
 });

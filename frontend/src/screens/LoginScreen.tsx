@@ -13,6 +13,8 @@ import { useAuth } from "../context/AuthContext";
 import EyeIcon from "../../assets/icons/oeil-mdp.png";
 import GoogleIcon from "../../assets/icons/google-icon.png";
 
+const FIGTREE_FONT = "Figtree-Medium";
+
 interface LoginScreenProps {
   onGoToRegister: () => void;
   onGoToForgotPassword: () => void;
@@ -144,12 +146,14 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#111",
     marginBottom: 36,
+    fontFamily: FIGTREE_FONT,
   },
   label: {
     alignSelf: "flex-start",
     fontSize: 14,
     color: "#333",
     marginBottom: 8,
+    fontFamily: FIGTREE_FONT,
   },
   inputWrapper: {
     width: "100%",
@@ -167,6 +171,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 15,
     color: "#333",
+    fontFamily: FIGTREE_FONT,
   },
   checkIcon: {
     width: 28,
@@ -180,6 +185,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 14,
     fontWeight: "bold",
+    fontFamily: FIGTREE_FONT,
   },
   eyeIcon: {
     padding: 4,
@@ -209,6 +215,7 @@ const styles = StyleSheet.create({
   forgotText: {
     color: "#555",
     fontSize: 13,
+    fontFamily: FIGTREE_FONT,
   },
   button: {
     width: "100%",
@@ -225,20 +232,24 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
+    fontFamily: FIGTREE_FONT,
   },
   registerText: {
     fontSize: 14,
     color: "#666",
     marginBottom: 16,
+    fontFamily: FIGTREE_FONT,
   },
   registerLink: {
     fontWeight: "bold",
     color: "#111",
+    fontFamily: FIGTREE_FONT,
   },
   orText: {
     color: "#aaa",
     fontSize: 13,
     marginBottom: 14,
+    fontFamily: FIGTREE_FONT,
   },
   socialButton: {
     width: "100%",
@@ -259,5 +270,6 @@ const styles = StyleSheet.create({
   socialButtonText: {
     fontSize: 15,
     color: "#333",
+    fontFamily: FIGTREE_FONT,
   },
 });

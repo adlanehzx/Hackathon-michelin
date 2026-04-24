@@ -16,12 +16,15 @@ import {
 import { hotelService, Hotel } from "../services/hotelService";
 import { AppIcon } from "../components/AppIcon";
 
+const CERTIFIED_BADGE = require("../../assets/icons/certified-badge.png");
+
 const FIGTREE_FONT = "Figtree-Medium";
 
 type HotelSection = {
   id: string;
   title: string;
   avatarUrl: string;
+  isCertified: boolean;
   items: Hotel[];
 };
 
@@ -30,37 +33,43 @@ const INFLUENCER_CAROUSELS_COUNT = 4;
 
 const CURATOR_PROFILES = [
   {
-    title: "Sélection de Léna Situations",
+    title: "La sélection de Léna Situations",
     avatarUrl:
       "https://upload.wikimedia.org/wikipedia/commons/e/ea/L%C3%A9na_Situations_during_the_MiuMiu_Fashion_Show.png",
+    isCertified: true,
   },
   {
-    title: "Sélection de Pape San",
+    title: "La sélection de Pape San",
     avatarUrl:
       "https://upload.wikimedia.org/wikipedia/commons/3/34/Pape_San_en_2025.png",
+    isCertified: true,
   },
   {
-    title: "Sélection de Cédric Grolet",
+    title: "La sélection de Cédric Grolet",
     avatarUrl:
       "https://upload.wikimedia.org/wikipedia/commons/c/c9/C%C3%A9dric_Grolet_-_cropped_from_%22Meir_danon_cedric_grolet%22.jpg",
+    isCertified: true,
   },
   {
-    title: "Sélection de Salt Bae (Nusret Gökçe)",
+    title: "La sélection de Salt Bae (Nusret Gökçe)",
     avatarUrl:
       "https://upload.wikimedia.org/wikipedia/commons/9/97/Salt_Bae.png",
+    isCertified: true,
   },
 ];
 
 const GUIDE_MICHELIN_PROFILE = {
-  title: "Sélection Michelin",
+  title: "Coups de coeur Michelin",
   avatarUrl:
     "https://upload.wikimedia.org/wikipedia/commons/9/9f/Michelin_guide_logo.png",
+  isCertified: false,
 };
 
 const USER_PROFILE = {
   title: "Sélection par vous",
   avatarUrl:
     "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=160&q=80",
+  isCertified: false,
 };
 
 const SECTION_PROFILES = [
@@ -220,6 +229,13 @@ const HotelSectionBlock = ({
         <Text style={styles.sectionTitle} numberOfLines={1}>
           {section.title}
         </Text>
+        {section.isCertified && (
+          <Image
+            source={CERTIFIED_BADGE}
+            style={styles.certifiedBadge}
+            resizeMode="contain"
+          />
+        )}
       </View>
 
       <ScrollView
@@ -295,6 +311,7 @@ export const HotellerieScreen = () => {
         id: `section-${index}`,
         title: profile.title,
         avatarUrl: profile.avatarUrl,
+        isCertified: profile.isCertified,
         items: randomizedHotels.slice(start, end),
       };
     }).filter((section) => section.items.length > 0);
@@ -324,7 +341,7 @@ export const HotellerieScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.screenTitle}>Hôtels</Text>
+      <Text style={styles.screenTitle}>Hôtellerie</Text>
 
       <View style={styles.searchRow}>
         <View style={styles.searchInputWrap}>
@@ -365,14 +382,14 @@ export const HotellerieScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#E8E7E5",
+    backgroundColor: "#F5F1EE",
     paddingTop: Platform.OS === "ios" ? 60 : 24,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#E8E7E5",
+    backgroundColor: "#F5F1EE",
   },
   loadingText: {
     marginTop: 12,
@@ -439,11 +456,16 @@ const styles = StyleSheet.create({
     borderColor: "#FFFFFF",
   },
   sectionTitle: {
-    flex: 1,
+    flexShrink: 1,
     color: "#3E3732",
     fontSize: 16,
     lineHeight: 20,
     fontFamily: FIGTREE_FONT,
+  },
+  certifiedBadge: {
+    width: 20,
+    height: 20,
+    marginLeft: 4,
   },
   sectionCardsRow: {
     paddingHorizontal: 24,

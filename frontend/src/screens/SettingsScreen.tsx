@@ -13,6 +13,8 @@ import { useAuth } from "../context/AuthContext";
 import gamificationService from "../services/gamificationService";
 import { BackArrowIcon, CaretRightIcon } from "../components/SvgIcons";
 
+const FIGTREE_FONT = "Figtree-Medium";
+
 interface SettingsScreenProps {
   onBack: () => void;
 }
@@ -58,6 +60,7 @@ const settingRowStyles = StyleSheet.create({
     fontWeight: "400",
     color: "#0C0C0C",
     lineHeight: 19,
+    fontFamily: FIGTREE_FONT,
   },
   divider: {
     height: StyleSheet.hairlineWidth,
@@ -86,10 +89,11 @@ const sectionStyles = StyleSheet.create({
     gap: 19,
   },
   title: {
-    fontSize: 24,
-    fontWeight: "500",
+    fontSize: 18,
+    fontWeight: "600",
     color: "#3F362F",
-    lineHeight: 19,
+    lineHeight: 22,
+    fontFamily: FIGTREE_FONT,
   },
   card: {
     backgroundColor: "#FAFBFE",
@@ -282,10 +286,11 @@ const styles = StyleSheet.create({
     padding: 0,
   },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: "500",
+    fontSize: 22,
+    fontWeight: "600",
     color: "#0C0C0C",
-    lineHeight: 24,
+    lineHeight: 26,
+    fontFamily: FIGTREE_FONT,
   },
   scrollView: {
     flex: 1,
@@ -315,6 +320,7 @@ const styles = StyleSheet.create({
     fontSize: 30,
     fontWeight: "600",
     color: "#FFFFFF",
+    fontFamily: FIGTREE_FONT,
   },
   userInfo: {
     flex: 1,
@@ -322,10 +328,11 @@ const styles = StyleSheet.create({
     paddingTop: 4,
   },
   userName: {
-    fontSize: 24,
-    fontWeight: "500",
+    fontSize: 20,
+    fontWeight: "600",
     color: "#3F362F",
-    lineHeight: 19,
+    lineHeight: 24,
+    fontFamily: FIGTREE_FONT,
   },
   badgeGradient: {
     alignSelf: "flex-start",
@@ -340,6 +347,7 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     textAlign: "center",
     letterSpacing: 0,
+    fontFamily: FIGTREE_FONT,
   },
   editProfileRow: {
     flexDirection: "row",
@@ -352,10 +360,12 @@ const styles = StyleSheet.create({
     color: "#3F362F",
     textDecorationLine: "underline",
     lineHeight: 19,
+    fontFamily: FIGTREE_FONT,
   },
   editProfileIcon: {
     fontSize: 14,
     color: "#3F362F",
+    fontFamily: FIGTREE_FONT,
   },
   rowsContainer: {
     marginTop: 8,
@@ -379,6 +389,7 @@ const styles = StyleSheet.create({
     fontWeight: "400",
     color: "#3F362F",
     lineHeight: 19,
+    fontFamily: FIGTREE_FONT,
   },
   deleteAccountText: {
     fontSize: 16,
@@ -386,5 +397,6 @@ const styles = StyleSheet.create({
     color: "#C0012C",
     lineHeight: 19,
     textAlign: "center",
+    fontFamily: FIGTREE_FONT,
   },
 });

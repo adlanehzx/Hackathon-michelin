@@ -20,6 +20,8 @@ import { SettingsScreen } from "./SettingsScreen";
 import { BadgesScreen, getBadgeImage } from "./BadgesScreen";
 import { SettingsIcon, LevelStarIcon } from "../components/SvgIcons";
 
+const FIGTREE_FONT = "Figtree-Medium";
+
 type AuthView = "login" | "register" | "forgot" | "reset";
 
 const AuthFlowView: React.FC<{
@@ -318,6 +320,7 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "bold",
     color: "#111",
+    fontFamily: FIGTREE_FONT,
   },
   profileHeader: {
     flexDirection: "row",
@@ -337,20 +340,23 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "bold",
     color: "#fff",
+    fontFamily: FIGTREE_FONT,
   },
   profileInfo: {
     flex: 1,
   },
   profileName: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "bold",
     color: "#111",
     marginBottom: 4,
+    fontFamily: FIGTREE_FONT,
   },
   profileSub: {
     fontSize: 14,
     color: "#666",
     marginBottom: 8,
+    fontFamily: FIGTREE_FONT,
   },
   badgeTag: {
     alignSelf: "flex-start",
@@ -364,9 +370,10 @@ const styles = StyleSheet.create({
   },
   badgeTagText: {
     color: "#fff",
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: "bold",
     letterSpacing: 0.5,
+    fontFamily: FIGTREE_FONT,
   },
 
   card: {
@@ -376,10 +383,11 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   cardTitle: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: "bold",
     color: "#111",
     marginBottom: 16,
+    fontFamily: FIGTREE_FONT,
   },
   badgesRow: {
     flexDirection: "row",
@@ -397,6 +405,7 @@ const styles = StyleSheet.create({
     color: "#555",
     lineHeight: 20,
     marginBottom: 16,
+    fontFamily: FIGTREE_FONT,
   },
   progressionButton: {
     backgroundColor: "#c0001a",
@@ -408,6 +417,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
+    fontFamily: FIGTREE_FONT,
   },
 
   section: {
@@ -420,14 +430,16 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
     color: "#111",
+    fontFamily: FIGTREE_FONT,
   },
   sectionLink: {
     fontSize: 14,
     color: "#111",
     fontWeight: "500",
+    fontFamily: FIGTREE_FONT,
   },
 
   listCard: {
@@ -453,10 +465,12 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#111",
     marginBottom: 4,
+    fontFamily: FIGTREE_FONT,
   },
   listSub: {
     fontSize: 13,
     color: "#888",
+    fontFamily: FIGTREE_FONT,
   },
   arrowButton: {
     width: 32,
@@ -468,9 +482,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   arrowText: {
-    fontSize: 18,
+    fontSize: 16,
     color: "#111",
-    lineHeight: 20,
+    lineHeight: 18,
   },
 
   connectButton: {
@@ -484,6 +498,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
+    fontFamily: FIGTREE_FONT,
   },
   emptyCard: {
     backgroundColor: "#fff",
@@ -494,6 +509,7 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 14,
     color: "#888",
+    fontFamily: FIGTREE_FONT,
   },
 
   loadingContainer: {
@@ -530,5 +546,6 @@ const styles = StyleSheet.create({
     color: "#c0001a",
     fontSize: 15,
     fontWeight: "600",
+    fontFamily: FIGTREE_FONT,
   },
 });

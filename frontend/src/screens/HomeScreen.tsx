@@ -9,6 +9,8 @@ import {
 } from "react-native";
 import { useAuth } from "../context/AuthContext";
 
+const FIGTREE_FONT = "Figtree-Medium";
+
 export const HomeScreen: React.FC = () => {
   const { user, logout } = useAuth();
 
@@ -70,10 +72,11 @@ const styles = StyleSheet.create({
     paddingTop: 40,
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "bold",
     marginBottom: 24,
     color: "#000",
+    fontFamily: FIGTREE_FONT,
   },
   userCard: {
     backgroundColor: "#fff",
@@ -86,12 +89,14 @@ const styles = StyleSheet.create({
     color: "#666",
     marginBottom: 8,
     fontWeight: "600",
+    fontFamily: FIGTREE_FONT,
   },
   value: {
     fontSize: 18,
     color: "#000",
     marginBottom: 24,
     fontWeight: "500",
+    fontFamily: FIGTREE_FONT,
   },
   logoutButton: {
     width: "100%",
@@ -104,5 +109,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
+    fontFamily: FIGTREE_FONT,
   },
 });

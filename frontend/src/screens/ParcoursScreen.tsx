@@ -22,6 +22,8 @@ import {
   parcoursService,
 } from "../services/parcoursService";
 
+const FIGTREE_FONT = "Figtree-Medium";
+
 const DEFAULT_FILTERS: ParcoursFilters = {
   mode: "parcours",
   countries: [],
@@ -683,7 +685,8 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 10,
     color: "#6B6363",
-    fontSize: 11,
+    fontSize: 13,
+    fontFamily: FIGTREE_FONT,
   },
   content: {
     paddingHorizontal: 24,
@@ -691,12 +694,12 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
   pageTitle: {
-    fontSize: 41,
-    lineHeight: 43,
+    fontSize: 28,
+    lineHeight: 33,
     fontWeight: "700",
     color: "#111111",
     marginBottom: 14,
-    letterSpacing: -1.2,
+    fontFamily: FIGTREE_FONT,
   },
   filterChipsWrap: {
     flexDirection: "row",
@@ -718,8 +721,9 @@ const styles = StyleSheet.create({
   },
   filtersToggleText: {
     color: "#514B4B",
-    fontSize: 10,
+    fontSize: 13,
     fontWeight: "700",
+    fontFamily: FIGTREE_FONT,
   },
   chip: {
     borderRadius: 999,
@@ -737,8 +741,9 @@ const styles = StyleSheet.create({
   },
   chipText: {
     color: "#514B4B",
-    fontSize: 9,
+    fontSize: 12,
     fontWeight: "600",
+    fontFamily: FIGTREE_FONT,
   },
   chipTextActive: {
     color: "#CC0B39",
@@ -752,17 +757,19 @@ const styles = StyleSheet.create({
     borderColor: "#E8E1E1",
   },
   panelTitle: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: "700",
     color: "#191616",
     marginBottom: 10,
+    fontFamily: FIGTREE_FONT,
   },
   inputLabel: {
-    fontSize: 9,
+    fontSize: 12,
     color: "#665D5D",
     marginBottom: 6,
     marginTop: 8,
     fontWeight: "600",
+    fontFamily: FIGTREE_FONT,
   },
   input: {
     borderWidth: 1,
@@ -772,6 +779,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF",
     paddingHorizontal: 12,
     color: "#231F1F",
+    fontFamily: FIGTREE_FONT,
   },
   inputGrid: {
     flexDirection: "row",
@@ -803,7 +811,8 @@ const styles = StyleSheet.create({
   optionChipText: {
     color: "#585252",
     fontWeight: "600",
-    fontSize: 9,
+    fontSize: 12,
+    fontFamily: FIGTREE_FONT,
   },
   optionChipTextActive: {
     color: "#FFF",
@@ -824,7 +833,8 @@ const styles = StyleSheet.create({
   secondaryButtonText: {
     color: "#554E4E",
     fontWeight: "700",
-    fontSize: 9,
+    fontSize: 14,
+    fontFamily: FIGTREE_FONT,
   },
   primaryButton: {
     backgroundColor: "#CC0B39",
@@ -835,30 +845,33 @@ const styles = StyleSheet.create({
   primaryButtonText: {
     color: "#FFF",
     fontWeight: "700",
-    fontSize: 9,
+    fontSize: 14,
+    fontFamily: FIGTREE_FONT,
   },
   section: {
     marginBottom: 18,
   },
   sectionTitleUpper: {
-    fontSize: 33,
-    lineHeight: 35,
+    fontSize: 22,
+    lineHeight: 26,
     fontWeight: "700",
     color: "#141212",
     marginBottom: 4,
-    letterSpacing: -0.9,
+    fontFamily: FIGTREE_FONT,
   },
   sectionSubtitle: {
-    fontSize: 15,
+    fontSize: 14,
     lineHeight: 20,
-    fontWeight: "700",
+    fontWeight: "600",
     color: "#201C1C",
     marginBottom: 10,
+    fontFamily: FIGTREE_FONT,
   },
   completionText: {
     fontSize: 13,
     color: "#3B3535",
     marginBottom: 8,
+    fontFamily: FIGTREE_FONT,
   },
   progressTrack: {
     width: "100%",
@@ -902,6 +915,7 @@ const styles = StyleSheet.create({
   imageFallbackText: {
     color: "#87756F",
     fontWeight: "700",
+    fontFamily: FIGTREE_FONT,
   },
   cardBody: {
     padding: 10,
@@ -918,19 +932,22 @@ const styles = StyleSheet.create({
   cardTitle: {
     flex: 1,
     color: "#221F1F",
-    fontSize: 13,
-    lineHeight: 15,
+    fontSize: 14,
+    lineHeight: 18,
     fontWeight: "700",
+    fontFamily: FIGTREE_FONT,
   },
   cardPrice: {
     color: "#201C1C",
     fontSize: 14,
     marginHorizontal: 6,
+    fontFamily: FIGTREE_FONT,
   },
   cardFavorite: {
     color: "#191515",
     fontSize: 18,
     lineHeight: 18,
+    fontFamily: FIGTREE_FONT,
   },
   cardLocation: {
     color: "#595050",
@@ -938,6 +955,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     marginTop: 4,
     marginBottom: 12,
+    fontFamily: FIGTREE_FONT,
   },
   actionButton: {
     minHeight: 48,
@@ -953,8 +971,9 @@ const styles = StyleSheet.create({
   },
   actionButtonText: {
     color: "#CC0B39",
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: "700",
+    fontFamily: FIGTREE_FONT,
   },
   actionButtonTextDone: {
     color: "#FFF",
@@ -972,14 +991,15 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: "#FFF",
     fontWeight: "700",
-    fontSize: 10,
+    fontSize: 14,
+    fontFamily: FIGTREE_FONT,
   },
   recoHeader: {
-    fontSize: 41,
-    lineHeight: 43,
+    fontSize: 28,
+    lineHeight: 33,
     fontWeight: "700",
     color: "#141212",
     marginBottom: 10,
-    letterSpacing: -1.2,
+    fontFamily: FIGTREE_FONT,
   },
 });

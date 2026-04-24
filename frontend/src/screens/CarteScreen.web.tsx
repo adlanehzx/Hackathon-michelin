@@ -20,7 +20,7 @@ import {
 
 const FIGTREE_FONT = "Figtree-Medium";
 
-type MichelinFilter = "all" | "selected" | "bib" | "star";
+type MichelinFilter = "all" | "selected" | "bib" | "1star" | "2star" | "3star" | "green";
 
 const ENABLE_TEMP_BALANCED_DISTINCTIONS = true;
 const BALANCED_KIND_ORDER: RestaurantPinKind[] = ["selected", "bib", "star"];
@@ -58,17 +58,27 @@ const normalizeText = (value: string) =>
 const matchesMichelinFilter = (
   restaurant: Restaurant,
   filter: MichelinFilter,
-  balancedKindMap: Record<string, RestaurantPinKind>,
+  _balancedKindMap: Record<string, RestaurantPinKind>,
 ) => {
-  const displayKind = getDisplayPinKind(restaurant, balancedKindMap);
+  const award = (restaurant.michelin_award || "").toUpperCase();
+  const stars = restaurant.michelin_stars ?? 0;
+  const isBib = restaurant.is_bib_gourmand || award.includes("BIB");
+  const isGreen = restaurant.green_star === true;
+  const hasStar = stars > 0 || award.includes("STAR");
 
   switch (filter) {
     case "selected":
-      return displayKind === "selected";
+      return !isBib && !hasStar && !isGreen;
     case "bib":
-      return displayKind === "bib";
-    case "star":
-      return displayKind === "star";
+      return isBib;
+    case "1star":
+      return stars === 1 || award === "ONE_STAR";
+    case "2star":
+      return stars === 2 || award === "TWO_STARS";
+    case "3star":
+      return stars === 3 || award === "THREE_STARS";
+    case "green":
+      return isGreen;
     default:
       return true;
   }
@@ -225,9 +235,12 @@ export const CarteScreen = () => {
             <View style={styles.filterChips}>
               {[
                 { key: "all", label: "Tous" },
-                { key: "selected", label: "Sélectionnés" },
+                { key: "selected", label: "Sélections Michelin" },
                 { key: "bib", label: "Bib Gourmand" },
-                { key: "star", label: "Étoilés" },
+                { key: "1star", label: "1 Étoile" },
+                { key: "2star", label: "2 Étoiles" },
+                { key: "3star", label: "3 Étoiles" },
+                { key: "green", label: "Étoile Verte" },
               ].map((chip) => (
                 <TouchableOpacity
                   key={chip.key}
@@ -513,7 +526,7 @@ const styles = StyleSheet.create({
     fontFamily: FIGTREE_FONT,
   },
   cardBadge: {
-    fontSize: 9,
+    fontSize: 11,
     color: "#6A5C4D",
     backgroundColor: "#F3ECE4",
     paddingHorizontal: 8,

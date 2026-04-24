@@ -15,6 +15,8 @@ import {
 import feedService, { FeedVideo } from "../services/feedService";
 import { AuthContext } from "../context/AuthContext";
 
+const FIGTREE_FONT = "Figtree-Medium";
+
 const { width, height } = Dimensions.get("window");
 
 interface FeedScreenProps {
@@ -269,6 +271,7 @@ const styles = StyleSheet.create({
   loadingText: {
     color: "#fff",
     fontSize: 16,
+    fontFamily: FIGTREE_FONT,
   },
   emptyContainer: {
     flex: 1,
@@ -280,6 +283,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     marginBottom: 20,
+    fontFamily: FIGTREE_FONT,
   },
   refreshButton: {
     backgroundColor: "#E4000F",
@@ -290,6 +294,7 @@ const styles = StyleSheet.create({
   refreshButtonText: {
     color: "#fff",
     fontWeight: "bold",
+    fontFamily: FIGTREE_FONT,
   },
   header: {
     flexDirection: "row",
@@ -311,11 +316,13 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
     fontSize: 14,
+    fontFamily: FIGTREE_FONT,
   },
   headerTitle: {
     color: "#fff",
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
+    fontFamily: FIGTREE_FONT,
   },
   headerRefresh: {
     fontSize: 20,
@@ -357,12 +364,13 @@ const styles = StyleSheet.create({
   },
   title: {
     color: "#fff",
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
     marginBottom: 8,
     textShadowColor: "rgba(0, 0, 0, 0.8)",
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 3,
+    fontFamily: FIGTREE_FONT,
   },
   description: {
     color: "#e0e0e0",
@@ -371,6 +379,7 @@ const styles = StyleSheet.create({
     textShadowColor: "rgba(0, 0, 0, 0.8)",
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 3,
+    fontFamily: FIGTREE_FONT,
   },
   authorRow: {
     flexDirection: "row",
@@ -392,6 +401,7 @@ const styles = StyleSheet.create({
     textShadowColor: "rgba(0, 0, 0, 0.8)",
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
+    fontFamily: FIGTREE_FONT,
   },
   restaurantName: {
     color: "#ffd700",
@@ -400,6 +410,7 @@ const styles = StyleSheet.create({
     textShadowColor: "rgba(0, 0, 0, 0.8)",
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
+    fontFamily: FIGTREE_FONT,
   },
   tagsContainer: {
     marginTop: 10,
@@ -416,6 +427,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 12,
     fontWeight: "600",
+    fontFamily: FIGTREE_FONT,
   },
   actionButtons: {
     position: "absolute",
@@ -438,6 +450,7 @@ const styles = StyleSheet.create({
     textShadowColor: "rgba(0, 0, 0, 0.8)",
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
+    fontFamily: FIGTREE_FONT,
   },
   playButton: {
     position: "absolute",
@@ -452,7 +465,7 @@ const styles = StyleSheet.create({
     marginTop: -30,
   },
   playButtonText: {
-    fontSize: 28,
+    fontSize: 22,
     color: "#fff",
   },
 });
