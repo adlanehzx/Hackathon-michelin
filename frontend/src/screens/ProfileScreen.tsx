@@ -15,6 +15,8 @@ import { LoginScreen } from "./LoginScreen";
 import { ForgotPasswordScreen } from "./ForgotPasswordScreen";
 import { ResetPasswordScreen } from "./ResetPasswordScreen";
 import { RegisterScreen } from "./RegisterScreen";
+import { SettingsScreen } from "./SettingsScreen";
+import { SettingsIcon } from "../components/SvgIcons";
 
 type AuthView = "login" | "register" | "forgot" | "reset";
 
@@ -98,7 +100,9 @@ const LoggedOutView: React.FC<{ onConnect: () => void }> = ({ onConnect }) => {
   );
 };
 
-const LoggedInView: React.FC = () => {
+const LoggedInView: React.FC<{ onOpenSettings: () => void }> = ({
+  onOpenSettings,
+}) => {
   const { user, token, logout } = useAuth();
   const [progress, setProgress] = useState<any>(null);
   const [badges, setBadges] = useState<any[]>([]);
@@ -162,7 +166,16 @@ const LoggedInView: React.FC = () => {
 
   return (
     <ScrollView style={styles.page} contentContainerStyle={styles.pageContent}>
-      <Text style={styles.pageTitle}>Mon profil</Text>
+      <View style={styles.titleRow}>
+        <Text style={styles.pageTitle}>Mon profil</Text>
+        <TouchableOpacity
+          onPress={onOpenSettings}
+          activeOpacity={0.6}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <SettingsIcon />
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.profileHeader}>
         <View style={styles.avatarCircle}>
@@ -237,9 +250,14 @@ export const ProfileScreen: React.FC = () => {
   const [authView, setAuthView] = useState<AuthView>("login");
   const [resetEmail, setResetEmail] = useState("");
   const [showAuth, setShowAuth] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+
+  if (isSignedIn && showSettings) {
+    return <SettingsScreen onBack={() => setShowSettings(false)} />;
+  }
 
   if (isSignedIn) {
-    return <LoggedInView />;
+    return <LoggedInView onOpenSettings={() => setShowSettings(true)} />;
   }
 
   if (showAuth) {
@@ -269,13 +287,17 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 40,
   },
+  titleRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
   pageTitle: {
     fontSize: 28,
     fontWeight: "bold",
     color: "#111",
-    marginBottom: 20,
   },
-
   profileHeader: {
     flexDirection: "row",
     alignItems: "center",
