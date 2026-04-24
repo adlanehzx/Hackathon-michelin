@@ -45,7 +45,6 @@ if (Platform.OS !== "web") {
 
 type MichelinFilter = "all" | "selected" | "bib" | "1star" | "2star" | "3star" | "green";
 
-// Temporary visual balancing until real Michelin distinctions are fully populated in DB.
 const ENABLE_TEMP_BALANCED_DISTINCTIONS = true;
 const BALANCED_KIND_ORDER: RestaurantPinKind[] = ["selected", "bib", "star"];
 

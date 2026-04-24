@@ -35,55 +35,47 @@ const getApiUrl = () => {
 
 const API_URL = getApiUrl();
 
-/**
- * Structure des restaurants provenant de Supabase
- * Table: restaurants
- * Source: Michelin Guide
- */
+
 export interface Restaurant {
-  // Identifiants
+ 
   id: string;
   michelin_id?: string;
   slug?: string;
 
-  // Informations principales
+  
   name: string;
   chef?: string;
   description?: string;
 
-  // Localisation
   street?: string;
   city?: string;
   area?: string;
   country?: string;
   postcode?: string | null;
-  lat?: number; // Latitude
-  lng?: number; // Longitude
+  lat?: number; 
+  lng?: number; 
   country_code?: string;
 
-  // Contact et web
   phone?: string;
   website?: string;
   booking_url?: string;
   online_booking?: boolean;
   short_link?: string;
 
-  // Cuisine et tarifs
   cuisine_type?: string;
-  price_range?: string; // luxury, expensive, moderate, etc.
+  price_range?: string; 
 
-  // Distinctions Michelin
+ 
   michelin_stars?: number;
-  michelin_award?: string; // ONE_STAR, TWO_STARS, THREE_STARS
+  michelin_award?: string; 
   green_star?: boolean;
   is_bib_gourmand?: boolean;
 
-  // Médias
   image_url?: string;
 
-  // Métadonnées
+  
   guide_year?: number;
-  status?: string; // Published, etc.
+  status?: string; 
   created_at?: string;
 }
 

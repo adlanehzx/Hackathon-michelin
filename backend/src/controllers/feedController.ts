@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { supabase } from "../config/supabase";
 
-// Récupère le feed personnalisé pour un utilisateur
 export const getPersonalizedFeed = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
@@ -14,7 +13,7 @@ export const getPersonalizedFeed = async (req: Request, res: Response) => {
       });
     }
 
-    // Récupère les vidéos personnalisées via la fonction SQL
+   
     const { data, error } = await supabase.rpc("get_personalized_feed", {
       p_user_id: userId,
       p_limit: parseInt(limit as string) || 10,
@@ -42,7 +41,7 @@ export const getPersonalizedFeed = async (req: Request, res: Response) => {
   }
 };
 
-// Récupère une vidéo spécifique
+
 export const getVideoById = async (req: Request, res: Response) => {
   try {
     const { videoId } = req.params;
@@ -80,7 +79,7 @@ export const getVideoById = async (req: Request, res: Response) => {
   }
 };
 
-// Crée une nouvelle vidéo
+
 export const createVideo = async (req: Request, res: Response) => {
   try {
     const {
@@ -103,7 +102,7 @@ export const createVideo = async (req: Request, res: Response) => {
       });
     }
 
-    // Crée la vidéo
+    
     const { data: video, error: videoError } = await supabase
       .from("feed_videos")
       .insert([
@@ -130,7 +129,7 @@ export const createVideo = async (req: Request, res: Response) => {
       });
     }
 
-    // Ajoute les tags si fournis
+    
     if (tags.length > 0) {
       const videoTags = tags.map((tagId: string) => ({
         video_id: video.id,
@@ -160,7 +159,7 @@ export const createVideo = async (req: Request, res: Response) => {
   }
 };
 
-// Enregistre une interaction (like, view, skip)
+
 export const recordInteraction = async (req: Request, res: Response) => {
   try {
     const { userId, videoId, interactionType, watchDurationSeconds = 0 } =
@@ -180,7 +179,7 @@ export const recordInteraction = async (req: Request, res: Response) => {
       });
     }
 
-    // Insère ou met à jour l'interaction
+    
     const { data, error } = await supabase
       .from("user_interactions")
       .upsert(
@@ -205,7 +204,7 @@ export const recordInteraction = async (req: Request, res: Response) => {
       });
     }
 
-    // Met à jour les compteurs de la vidéo
+    
     if (interactionType === "like") {
       await supabase.rpc("increment_video_likes", {
         video_id: videoId,
@@ -230,7 +229,7 @@ export const recordInteraction = async (req: Request, res: Response) => {
   }
 };
 
-// Récupère tous les tags
+
 export const getAllTags = async (req: Request, res: Response) => {
   try {
     const { category } = req.query;
@@ -264,7 +263,6 @@ export const getAllTags = async (req: Request, res: Response) => {
   }
 };
 
-// Récupère les vidéos d'un utilisateur
 export const getUserVideos = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
@@ -307,7 +305,6 @@ export const getUserVideos = async (req: Request, res: Response) => {
   }
 };
 
-// Supprime une vidéo
 export const deleteVideo = async (req: Request, res: Response) => {
   try {
     const { videoId } = req.params;
@@ -320,7 +317,6 @@ export const deleteVideo = async (req: Request, res: Response) => {
       });
     }
 
-    // Vérifie que l'utilisateur est le propriétaire
     const { data: video } = await supabase
       .from("feed_videos")
       .select("user_id")
@@ -334,16 +330,13 @@ export const deleteVideo = async (req: Request, res: Response) => {
       });
     }
 
-    // Supprime les tags associés (cascading)
     await supabase.from("video_tags").delete().eq("video_id", videoId);
 
-    // Supprime les interactions (cascading)
     await supabase
       .from("user_interactions")
       .delete()
       .eq("video_id", videoId);
 
-    // Supprime la vidéo
     const { error } = await supabase
       .from("feed_videos")
       .delete()

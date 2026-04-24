@@ -1,6 +1,5 @@
 import dotenv from "dotenv";
 
-// Load environment variables FIRST
 dotenv.config();
 
 import express, { Request, Response } from "express";
@@ -20,11 +19,9 @@ import progressRoutes, { userProgressRouter } from "./routes/progressRoutes";
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// HEALTH CHECK
 app.get("/api/health", (req: Request, res: Response) => {
   res.json({
     status: "ok",
@@ -34,12 +31,10 @@ app.get("/api/health", (req: Request, res: Response) => {
   });
 });
 
-// Welcome endpoint
 app.get("/", (req: Request, res: Response) => {
   res.json({ message: "Welcome to Michelin Hackathon API" });
 });
 
-// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
@@ -54,7 +49,6 @@ app.use("/api/progress", progressRoutes);
 app.use("/api/users", userBadgesRouter);
 app.use("/api/users", userProgressRouter);
 
-// Start server
 app.listen(PORT, () => {
   console.log(`✓ Server running on http://localhost:${PORT}`);
   console.log(`✓ Database: Supabase`);

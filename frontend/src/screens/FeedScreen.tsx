@@ -208,7 +208,6 @@ export const FeedScreen = ({ onBack }: FeedScreenProps) => {
     );
   }
 
-  // Web view avec scrollable
   if (Platform.OS === "web") {
     return (
       <SafeAreaView style={styles.container}>
@@ -234,7 +233,6 @@ export const FeedScreen = ({ onBack }: FeedScreenProps) => {
     );
   }
 
-  // Native view avec FlatList
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />

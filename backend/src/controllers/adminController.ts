@@ -24,7 +24,6 @@ export const createUser = async (req: AuthRequest, res: Response) => {
     const { nom, prenom, email, password, telephone, adresse, is_admin } =
       req.body;
 
-    // Validation
     if (!nom || !prenom || !email || !password) {
       return res.status(400).json({
         success: false,
@@ -32,7 +31,6 @@ export const createUser = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    // Vérifier si l'email existe déjà
     const { data: existingUser } = await supabase
       .from("users")
       .select("*")
@@ -46,10 +44,8 @@ export const createUser = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    // Hash password
     const password_hash = await bcrypt.hash(password, 10);
 
-    // Créer l'utilisateur
     const { error } = await supabase.from("users").insert([
       {
         nom,
@@ -81,7 +77,6 @@ export const updateUser = async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
     const { nom, prenom, email, telephone, adresse, is_admin } = req.body;
 
-    // Construire l'objet de mise à jour
     const updateData: any = {};
     if (nom !== undefined) updateData.nom = nom;
     if (prenom !== undefined) updateData.prenom = prenom;
@@ -97,7 +92,6 @@ export const updateUser = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    // Vérifier si email est unique (si on le change)
     if (email) {
       const { data: existingUser } = await supabase
         .from("users")

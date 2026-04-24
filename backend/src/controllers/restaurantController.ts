@@ -73,7 +73,6 @@ export const getRestaurantsByLocation = async (
       });
     }
 
-    // Récupérer tous les restaurants et filtrer côté serveur
     const { data, error } = await supabase
       .from("restaurants")
       .select("*")
@@ -88,14 +87,13 @@ export const getRestaurantsByLocation = async (
       });
     }
 
-    // Fonction pour calculer la distance entre deux coordonnées (formule de Haversine)
     const calculateDistance = (
       lat1: number,
       lon1: number,
       lat2: number,
       lon2: number
     ) => {
-      const R = 6371; // Rayon de la Terre en km
+      const R = 6371; 
       const dLat = ((lat2 - lat1) * Math.PI) / 180;
       const dLon = ((lon2 - lon1) * Math.PI) / 180;
       const a =

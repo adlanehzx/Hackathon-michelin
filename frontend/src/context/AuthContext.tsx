@@ -93,7 +93,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     } catch (error) {
       console.error("Error logging out:", error);
     } finally {
-      // Always clear local session, even if backend logout request fails.
       setUser(null);
       setToken(null);
       await storage.removeItem("authToken");
