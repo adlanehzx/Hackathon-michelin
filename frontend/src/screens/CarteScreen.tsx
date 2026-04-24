@@ -9,14 +9,18 @@ import {
   Alert,
   Platform,
   TextInput,
+  Linking,
 } from "react-native";
 import { restaurantService, Restaurant } from "../services/restaurantService";
 import {
   RestaurantPin,
   getRestaurantPinKind,
+  type RestaurantPinKind,
 } from "../components/RestaurantPin";
+import { AppIcon } from "../components/AppIcon";
 
-// Conditional imports to avoid web errors
+const FIGTREE_FONT = "Figtree-Medium";
+
 let MapView: any = null;
 let Marker: any = null;
 let PROVIDER_GOOGLE: any = null;
@@ -40,6 +44,33 @@ if (Platform.OS !== "web") {
 }
 
 type MichelinFilter = "all" | "selected" | "bib" | "star";
+
+// Temporary visual balancing until real Michelin distinctions are fully populated in DB.
+const ENABLE_TEMP_BALANCED_DISTINCTIONS = true;
+const BALANCED_KIND_ORDER: RestaurantPinKind[] = ["selected", "bib", "star"];
+
+const buildBalancedKindMap = (restaurants: Restaurant[]) => {
+  const map: Record<string, RestaurantPinKind> = {};
+
+  const sorted = [...restaurants].sort((a, b) => a.id.localeCompare(b.id));
+  sorted.forEach((restaurant, index) => {
+    map[restaurant.id] =
+      BALANCED_KIND_ORDER[index % BALANCED_KIND_ORDER.length];
+  });
+
+  return map;
+};
+
+const getDisplayPinKind = (
+  restaurant: Restaurant,
+  balancedKindMap: Record<string, RestaurantPinKind>,
+): RestaurantPinKind => {
+  if (ENABLE_TEMP_BALANCED_DISTINCTIONS) {
+    return balancedKindMap[restaurant.id] || "selected";
+  }
+
+  return getRestaurantPinKind(restaurant);
+};
 
 type MapRegion = {
   latitude: number;
@@ -65,16 +96,17 @@ const normalizeText = (value: string) =>
 const matchesMichelinFilter = (
   restaurant: Restaurant,
   filter: MichelinFilter,
+  balancedKindMap: Record<string, RestaurantPinKind>,
 ) => {
-  const award = normalizeText(restaurant.michelin_award || "");
+  const displayKind = getDisplayPinKind(restaurant, balancedKindMap);
 
   switch (filter) {
     case "selected":
-      return award === "selected";
+      return displayKind === "selected";
     case "bib":
-      return restaurant.is_bib_gourmand || award.includes("bib");
+      return displayKind === "bib";
     case "star":
-      return (restaurant.michelin_stars ?? 0) > 0 || award.includes("star");
+      return displayKind === "star";
     default:
       return true;
   }
@@ -102,20 +134,32 @@ const matchesSearch = (restaurant: Restaurant, query: string) => {
   return haystack.includes(query);
 };
 
-const getDistinctionLabel = (restaurant: Restaurant) => {
-  if ((restaurant.michelin_stars ?? 0) > 0) {
-    return `${restaurant.michelin_stars} etoile${restaurant.michelin_stars > 1 ? "s" : ""}`;
+const getDistinctionLabel = (
+  restaurant: Restaurant,
+  balancedKindMap: Record<string, RestaurantPinKind>,
+) => {
+  const displayKind = getDisplayPinKind(restaurant, balancedKindMap);
+
+  if (displayKind === "star") {
+    if ((restaurant.michelin_stars ?? 0) > 0) {
+      return `${restaurant.michelin_stars} etoile${restaurant.michelin_stars > 1 ? "s" : ""}`;
+    }
+
+    return "Etoile Michelin";
   }
 
-  if (restaurant.is_bib_gourmand) {
+  if (displayKind === "bib") {
     return "Bib Gourmand";
   }
 
-  if ((restaurant.michelin_award || "").toLowerCase() === "selected") {
-    return "Selection Michelin";
-  }
+  return "Selection Michelin";
+};
 
-  return "Restaurant";
+const getRealStarCount = (restaurant: Restaurant) => {
+  if ((restaurant.michelin_stars ?? 0) > 0) {
+    return restaurant.michelin_stars;
+  }
+  return 0;
 };
 
 const formatPriceRange = (priceRange?: string) => {
@@ -142,7 +186,18 @@ const getViewportKey = (region: MapRegion) =>
     Math.round(getViewportRadiusKm(region)),
   ].join(":");
 
-// ─── Main Screen ─────────────────────────────────────────────────────────────
+const openTheFork = async () => {
+  const url = "https://www.thefork.fr/";
+  const supported = await Linking.canOpenURL(url);
+
+  if (supported) {
+    await Linking.openURL(url);
+    return;
+  }
+
+  Alert.alert("Erreur", "Impossible d'ouvrir TheFork pour le moment.");
+};
+
 export const CarteScreen = () => {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [filteredRestaurants, setFilteredRestaurants] = useState<Restaurant[]>(
@@ -160,6 +215,7 @@ export const CarteScreen = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [filterMichelin, setFilterMichelin] = useState<MichelinFilter>("all");
   const [filterCuisine, setFilterCuisine] = useState("");
+  const balancedKindMap = useRef<Record<string, RestaurantPinKind>>({});
   const lastViewportKeyRef = useRef<string>("");
   const requestIdRef = useRef(0);
 
@@ -205,6 +261,8 @@ export const CarteScreen = () => {
   const applyFilters = () => {
     const query = normalizeText(searchQuery);
     const cuisineQuery = normalizeText(filterCuisine);
+    const currentBalancedKindMap = buildBalancedKindMap(restaurants);
+    balancedKindMap.current = currentBalancedKindMap;
 
     const results = restaurants.filter((restaurant) => {
       const cuisineValue = normalizeText(restaurant.cuisine_type || "");
@@ -212,7 +270,11 @@ export const CarteScreen = () => {
       return (
         matchesSearch(restaurant, query) &&
         (!cuisineQuery || cuisineValue.includes(cuisineQuery)) &&
-        matchesMichelinFilter(restaurant, filterMichelin)
+        matchesMichelinFilter(
+          restaurant,
+          filterMichelin,
+          currentBalancedKindMap,
+        )
       );
     });
 
@@ -286,11 +348,9 @@ export const CarteScreen = () => {
     });
   };
 
-  // ── NEW: Recenter on user location ────────────────────────────────────────
   const recenterOnUser = async () => {
     if (!mapRef || Platform.OS === "web") return;
 
-    // If we already have the location, animate directly
     if (userLocation) {
       mapRef.animateToRegion(
         {
@@ -304,7 +364,6 @@ export const CarteScreen = () => {
       return;
     }
 
-    // Otherwise request it fresh
     if (!Location) return;
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -331,7 +390,6 @@ export const CarteScreen = () => {
     }
   };
 
-  // ── Popup card ─────────────────────────────────────────────────────────────
   const RestaurantPopup = () => {
     if (!selectedRestaurant) return null;
     return (
@@ -358,11 +416,11 @@ export const CarteScreen = () => {
 
         <View style={styles.popupHeader}>
           <Text style={styles.popupDistinction}>
-            {getDistinctionLabel(selectedRestaurant)}
+            {getDistinctionLabel(selectedRestaurant, balancedKindMap.current)}
           </Text>
-          {selectedRestaurant.michelin_stars ? (
+          {getRealStarCount(selectedRestaurant) ? (
             <View style={styles.starsRow}>
-              {Array.from({ length: selectedRestaurant.michelin_stars }).map(
+              {Array.from({ length: getRealStarCount(selectedRestaurant) }).map(
                 (_, i) => (
                   <Text key={i} style={styles.starIcon}>
                     ⭐
@@ -416,14 +474,13 @@ export const CarteScreen = () => {
           </View>
         )}
 
-        <TouchableOpacity style={styles.popupCta}>
-          <Text style={styles.popupCtaText}>Voir la fiche</Text>
+        <TouchableOpacity style={styles.popupCta} onPress={openTheFork}>
+          <Text style={styles.popupCtaText}>Réserver</Text>
         </TouchableOpacity>
       </View>
     );
   };
 
-  // ── Map ────────────────────────────────────────────────────────────────────
   const renderMap = () => {
     if (Platform.OS === "web" || !MapView || !Marker) {
       return (
@@ -461,7 +518,6 @@ export const CarteScreen = () => {
           onRegionChangeComplete={handleRegionChangeComplete}
           customMapStyle={MICHELIN_MAP_STYLE}
         >
-          {/* User location dot */}
           {userLocation && (
             <Marker
               coordinate={{
@@ -476,7 +532,6 @@ export const CarteScreen = () => {
             </Marker>
           )}
 
-          {/* Restaurant markers */}
           {filteredRestaurants
             .filter((r) => r.lat && r.lng)
             .map((restaurant) => (
@@ -490,26 +545,23 @@ export const CarteScreen = () => {
                 anchor={{ x: 0.5, y: 1 }}
               >
                 <RestaurantPin
-                  kind={getRestaurantPinKind(restaurant)}
+                  kind={getDisplayPinKind(restaurant, balancedKindMap.current)}
                   selected={selectedRestaurant?.id === restaurant.id}
                 />
               </Marker>
             ))}
         </MapView>
 
-        {/* ── Side action buttons ──────────────────────────────────────── */}
         <View style={styles.actionButtons}>
-          {/* Fit all markers */}
-          <TouchableOpacity style={styles.actionBtn} onPress={fitToAllMarkers}>
-            <Text style={styles.actionBtnText}>⊙</Text>
-          </TouchableOpacity>
-
-          {/* Recenter on user location */}
           <TouchableOpacity
             style={[styles.actionBtn, styles.actionBtnLocate]}
             onPress={recenterOnUser}
           >
-            <Text style={styles.actionBtnText}>◎</Text>
+            <Image
+              source={require("../../assets/carte/recentrer.png")}
+              style={styles.icon}
+              resizeMode="contain"
+            />
           </TouchableOpacity>
         </View>
 
@@ -518,7 +570,6 @@ export const CarteScreen = () => {
     );
   };
 
-  // ── Loading ────────────────────────────────────────────────────────────────
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -528,13 +579,13 @@ export const CarteScreen = () => {
     );
   }
 
-  // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <View style={styles.container}>
-      {/* Search bar — floats above map */}
       <View style={styles.searchWrapper}>
         <View style={styles.searchBar}>
-          <Text style={styles.searchIconText}>🔍</Text>
+          <View style={styles.searchIconText}>
+            <AppIcon name="loupe" width={17} height={17} />
+          </View>
           <TextInput
             style={styles.searchInput}
             placeholder="Nom, ville, cuisine ou pays…"
@@ -547,11 +598,12 @@ export const CarteScreen = () => {
             style={[styles.filterBtn, showFilters && styles.filterBtnActive]}
             onPress={() => setShowFilters(!showFilters)}
           >
-            <Text style={styles.filterBtnIcon}>⊞</Text>
+            <View style={styles.filterBtnIcon}>
+              <AppIcon name="filtre" width={18} height={16} />
+            </View>
           </TouchableOpacity>
         </View>
 
-        {/* Filter panel */}
         {showFilters && (
           <View style={styles.filtersPanel}>
             <Text style={styles.filterSectionTitle}>Distinction Michelin</Text>
@@ -601,18 +653,13 @@ export const CarteScreen = () => {
   );
 };
 
-// ─── Michelin-style muted map — clean beige/grey palette ─────────────────────
-// Replaces the previous incomplete style that caused the green tint.
 const MICHELIN_MAP_STYLE = [
-  // Base geometry — warm light grey
   { elementType: "geometry", stylers: [{ color: "#ebe3d5" }] },
 
-  // All labels
   { elementType: "labels.icon", stylers: [{ visibility: "off" }] },
   { elementType: "labels.text.fill", stylers: [{ color: "#7b6f5e" }] },
   { elementType: "labels.text.stroke", stylers: [{ color: "#f5f0eb" }] },
 
-  // Administrative boundaries
   {
     featureType: "administrative",
     elementType: "geometry.stroke",
@@ -624,7 +671,6 @@ const MICHELIN_MAP_STYLE = [
     stylers: [{ visibility: "off" }],
   },
 
-  // Landscape — neutral sand
   {
     featureType: "landscape",
     elementType: "geometry",
@@ -636,7 +682,6 @@ const MICHELIN_MAP_STYLE = [
     stylers: [{ color: "#ddd6c8" }],
   },
 
-  // POI — hide most points of interest to keep the map clean
   {
     featureType: "poi",
     stylers: [{ visibility: "off" }],
@@ -652,7 +697,6 @@ const MICHELIN_MAP_STYLE = [
     stylers: [{ visibility: "off" }],
   },
 
-  // Roads
   {
     featureType: "road",
     elementType: "geometry",
@@ -694,13 +738,11 @@ const MICHELIN_MAP_STYLE = [
     stylers: [{ visibility: "off" }],
   },
 
-  // Transit — hidden
   {
     featureType: "transit",
     stylers: [{ visibility: "off" }],
   },
 
-  // Water — soft blue-grey
   {
     featureType: "water",
     elementType: "geometry",
@@ -713,14 +755,12 @@ const MICHELIN_MAP_STYLE = [
   },
 ];
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F5F0EB",
   },
 
-  // Loading
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
@@ -729,12 +769,11 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 12,
-    fontSize: 14,
+    fontSize: 13,
     color: "#888",
-    fontStyle: "italic",
+    fontFamily: FIGTREE_FONT,
   },
 
-  // Search bar
   searchWrapper: {
     position: "absolute",
     top: 0,
@@ -759,15 +798,17 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   searchIconText: {
-    fontSize: 18,
+    width: 17,
+    height: 17,
     marginRight: 10,
-    color: "#888",
+    alignItems: "center",
+    justifyContent: "center",
   },
   searchInput: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 14,
     color: "#1A1A1A",
-    fontFamily: Platform.OS === "ios" ? "Georgia" : "serif",
+    fontFamily: FIGTREE_FONT,
   },
   filterBtn: {
     width: 36,
@@ -781,11 +822,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#C8102E",
   },
   filterBtnIcon: {
-    fontSize: 18,
-    color: "#333",
+    width: 18,
+    height: 16,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
-  // Filters panel
   filtersPanel: {
     backgroundColor: "#FFFFFF",
     borderRadius: 16,
@@ -798,12 +840,12 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   filterSectionTitle: {
-    fontSize: 12,
-    fontWeight: "700",
+    fontSize: 11,
     color: "#888",
     letterSpacing: 1,
     textTransform: "uppercase",
     marginBottom: 10,
+    fontFamily: FIGTREE_FONT,
   },
   filterChips: {
     flexDirection: "row",
@@ -823,12 +865,13 @@ const styles = StyleSheet.create({
     borderColor: "#C8102E",
   },
   chipText: {
-    fontSize: 13,
+    fontSize: 12,
     color: "#555",
-    fontWeight: "600",
+    fontFamily: FIGTREE_FONT,
   },
   chipTextActive: {
     color: "#fff",
+    fontFamily: FIGTREE_FONT,
   },
   cuisineInput: {
     borderWidth: 1.5,
@@ -836,12 +879,12 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    fontSize: 14,
+    fontSize: 13,
     color: "#1A1A1A",
     backgroundColor: "#FAFAFA",
+    fontFamily: FIGTREE_FONT,
   },
 
-  // Map
   mapContainer: {
     flex: 1,
   },
@@ -851,7 +894,6 @@ const styles = StyleSheet.create({
     height: "100%",
   },
 
-  // User location dot
   userDot: {
     width: 20,
     height: 20,
@@ -869,7 +911,6 @@ const styles = StyleSheet.create({
     borderColor: "#fff",
   },
 
-  // ── Action buttons column (right side) ────────────────────────────────────
   actionButtons: {
     position: "absolute",
     top: Platform.OS === "ios" ? 130 : 90,
@@ -891,7 +932,6 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   actionBtnLocate: {
-    // Slight red tint to differentiate the locate button
     borderWidth: 1.5,
     borderColor: "#C8102E",
   },
@@ -900,7 +940,6 @@ const styles = StyleSheet.create({
     color: "#C8102E",
   },
 
-  // Web placeholder
   mapPlaceholder: {
     flex: 1,
     justifyContent: "center",
@@ -912,17 +951,17 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   mapPlaceholderText: {
-    fontSize: 16,
-    fontWeight: "700",
+    fontSize: 14,
     color: "#555",
+    fontFamily: FIGTREE_FONT,
   },
   mapSubtext: {
-    fontSize: 13,
+    fontSize: 12,
     color: "#999",
     marginTop: 4,
+    fontFamily: FIGTREE_FONT,
   },
 
-  // Popup card
   popup: {
     position: "absolute",
     bottom: 24,
@@ -970,9 +1009,9 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   closeBtnText: {
-    fontSize: 14,
+    fontSize: 13,
     color: "#888",
-    fontWeight: "bold",
+    fontFamily: FIGTREE_FONT,
   },
   popupHeader: {
     marginBottom: 6,
@@ -985,9 +1024,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 12,
-    fontSize: 11,
-    fontWeight: "700",
+    fontSize: 10,
     textTransform: "uppercase",
+    fontFamily: FIGTREE_FONT,
   },
   starsRow: {
     flexDirection: "row",
@@ -997,18 +1036,17 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   popupTitle: {
-    fontSize: 18,
-    fontWeight: "800",
+    fontSize: 16,
     color: "#1A1A1A",
     marginBottom: 4,
-    fontFamily: Platform.OS === "ios" ? "Georgia" : "serif",
+    fontFamily: FIGTREE_FONT,
     paddingRight: 32,
   },
   popupCuisine: {
-    fontSize: 13,
+    fontSize: 12,
     color: "#C8102E",
-    fontWeight: "600",
     marginBottom: 10,
+    fontFamily: FIGTREE_FONT,
   },
   popupMetaRow: {
     flexDirection: "row",
@@ -1022,8 +1060,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 10,
     paddingVertical: 5,
-    fontSize: 11,
-    fontWeight: "700",
+    fontSize: 10,
+    fontFamily: FIGTREE_FONT,
   },
   popupDivider: {
     height: 1,
@@ -1042,9 +1080,10 @@ const styles = StyleSheet.create({
   },
   popupText: {
     flex: 1,
-    fontSize: 13,
+    fontSize: 12,
     color: "#666",
-    lineHeight: 18,
+    lineHeight: 16,
+    fontFamily: FIGTREE_FONT,
   },
   popupCta: {
     marginTop: 14,
@@ -1055,8 +1094,12 @@ const styles = StyleSheet.create({
   },
   popupCtaText: {
     color: "#fff",
-    fontWeight: "700",
-    fontSize: 14,
+    fontSize: 13,
     letterSpacing: 0.5,
+    fontFamily: FIGTREE_FONT,
+  },
+  icon: {
+    width: 24,
+    height: 24,
   },
 });
