@@ -60,7 +60,7 @@ const AuthFlowView: React.FC<{
 const LoggedOutView: React.FC<{ onConnect: () => void }> = ({ onConnect }) => {
   return (
     <ScrollView style={styles.page} contentContainerStyle={styles.pageContent}>
-      <Text style={styles.pageTitle}>Mon profil</Text>
+      <Text style={[styles.pageTitle, { marginBottom: 28 }]}>Mon profil</Text>
 
       <TouchableOpacity style={styles.connectButton} onPress={onConnect}>
         <Text style={styles.connectButtonText}>Se connecter / S'inscrire</Text>
@@ -359,14 +359,14 @@ const styles = StyleSheet.create({
   },
   badgesRow: {
     flexDirection: "row",
-    gap: 8,
-    marginBottom: 14,
+    marginBottom: 12,
   },
   badgePlaceholder: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: "#e0e0e0",
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#D9D9D9",
+    marginRight: -10,
   },
   badgesDesc: {
     fontSize: 14,
