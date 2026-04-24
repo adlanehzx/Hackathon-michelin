@@ -74,7 +74,7 @@ services:
       - michelin-network
     environment:
       - EXPO_DEBUG=true
-      - REACT_NATIVE_PACKAGER_HOSTNAME=172.20.10.2
+      - REACT_NATIVE_PACKAGER_HOSTNAME=192.168.1.213
     restart: on-failure
 
 networks:

@@ -12,8 +12,41 @@ import {
   Platform,
 } from "react-native";
 import { restaurantService, Restaurant } from "../services/restaurantService";
+import { AppIcon } from "../components/AppIcon";
+import {
+  getRestaurantPinKind,
+  type RestaurantPinKind,
+} from "../components/RestaurantPin";
+
+const FIGTREE_FONT = "Figtree-Medium";
 
 type MichelinFilter = "all" | "selected" | "bib" | "star";
+
+const ENABLE_TEMP_BALANCED_DISTINCTIONS = true;
+const BALANCED_KIND_ORDER: RestaurantPinKind[] = ["selected", "bib", "star"];
+
+const buildBalancedKindMap = (restaurants: Restaurant[]) => {
+  const map: Record<string, RestaurantPinKind> = {};
+
+  const sorted = [...restaurants].sort((a, b) => a.id.localeCompare(b.id));
+  sorted.forEach((restaurant, index) => {
+    map[restaurant.id] =
+      BALANCED_KIND_ORDER[index % BALANCED_KIND_ORDER.length];
+  });
+
+  return map;
+};
+
+const getDisplayPinKind = (
+  restaurant: Restaurant,
+  balancedKindMap: Record<string, RestaurantPinKind>,
+): RestaurantPinKind => {
+  if (ENABLE_TEMP_BALANCED_DISTINCTIONS) {
+    return balancedKindMap[restaurant.id] || "selected";
+  }
+
+  return getRestaurantPinKind(restaurant);
+};
 
 const normalizeText = (value: string) =>
   value
@@ -25,35 +58,48 @@ const normalizeText = (value: string) =>
 const matchesMichelinFilter = (
   restaurant: Restaurant,
   filter: MichelinFilter,
+  balancedKindMap: Record<string, RestaurantPinKind>,
 ) => {
-  const award = normalizeText(restaurant.michelin_award || "");
+  const displayKind = getDisplayPinKind(restaurant, balancedKindMap);
 
   switch (filter) {
     case "selected":
-      return award === "selected";
+      return displayKind === "selected";
     case "bib":
-      return restaurant.is_bib_gourmand || award.includes("bib");
+      return displayKind === "bib";
     case "star":
-      return (restaurant.michelin_stars ?? 0) > 0 || award.includes("star");
+      return displayKind === "star";
     default:
       return true;
   }
 };
 
-const getDistinctionLabel = (restaurant: Restaurant) => {
-  if ((restaurant.michelin_stars ?? 0) > 0) {
-    return `${restaurant.michelin_stars} etoile${restaurant.michelin_stars > 1 ? "s" : ""}`;
+const getDistinctionLabel = (
+  restaurant: Restaurant,
+  balancedKindMap: Record<string, RestaurantPinKind>,
+) => {
+  const displayKind = getDisplayPinKind(restaurant, balancedKindMap);
+
+  if (displayKind === "star") {
+    if ((restaurant.michelin_stars ?? 0) > 0) {
+      return `${restaurant.michelin_stars} etoile${restaurant.michelin_stars > 1 ? "s" : ""}`;
+    }
+
+    return "Etoile Michelin";
   }
 
-  if (restaurant.is_bib_gourmand) {
+  if (displayKind === "bib") {
     return "Bib Gourmand";
   }
 
-  if ((restaurant.michelin_award || "").toLowerCase() === "selected") {
-    return "Selection Michelin";
-  }
+  return "Selection Michelin";
+};
 
-  return "Restaurant";
+const getRealStarCount = (restaurant: Restaurant) => {
+  if ((restaurant.michelin_stars ?? 0) > 0) {
+    return restaurant.michelin_stars;
+  }
+  return 0;
 };
 
 const formatPriceRange = (priceRange?: string) => {
@@ -77,6 +123,11 @@ export const CarteScreen = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [filterMichelin, setFilterMichelin] = useState<MichelinFilter>("all");
   const [filterCuisine, setFilterCuisine] = useState("");
+
+  const balancedKindMap = useMemo(
+    () => buildBalancedKindMap(restaurants),
+    [restaurants],
+  );
 
   useEffect(() => {
     const loadRestaurants = async () => {
@@ -123,10 +174,16 @@ export const CarteScreen = () => {
       return (
         (!query || haystack.includes(query)) &&
         (!cuisineQuery || cuisineValue.includes(cuisineQuery)) &&
-        matchesMichelinFilter(restaurant, filterMichelin)
+        matchesMichelinFilter(restaurant, filterMichelin, balancedKindMap)
       );
     });
-  }, [restaurants, searchQuery, filterCuisine, filterMichelin]);
+  }, [
+    restaurants,
+    searchQuery,
+    filterCuisine,
+    filterMichelin,
+    balancedKindMap,
+  ]);
 
   if (loading) {
     return (
@@ -141,7 +198,9 @@ export const CarteScreen = () => {
     <View style={styles.container}>
       <View style={styles.searchWrapper}>
         <View style={styles.searchBar}>
-          <Text style={styles.searchIconText}>🔍</Text>
+          <View style={styles.searchIconText}>
+            <AppIcon name="loupe" width={17} height={17} />
+          </View>
           <TextInput
             style={styles.searchInput}
             placeholder="Nom, ville, cuisine ou pays…"
@@ -154,7 +213,9 @@ export const CarteScreen = () => {
             style={[styles.filterBtn, showFilters && styles.filterBtnActive]}
             onPress={() => setShowFilters(!showFilters)}
           >
-            <Text style={styles.filterBtnIcon}>⊞</Text>
+            <View style={styles.filterBtnIcon}>
+              <AppIcon name="filtre" width={18} height={16} />
+            </View>
           </TouchableOpacity>
         </View>
 
@@ -235,9 +296,14 @@ export const CarteScreen = () => {
                     {item.name}
                   </Text>
                   <Text style={styles.cardBadge}>
-                    {getDistinctionLabel(item)}
+                    {getDistinctionLabel(item, balancedKindMap)}
                   </Text>
                 </View>
+                {getRealStarCount(item) ? (
+                  <Text style={styles.cardMeta}>
+                    {"⭐".repeat(getRealStarCount(item))}
+                  </Text>
+                ) : null}
                 <Text style={styles.cardMeta} numberOfLines={1}>
                   {[item.city, item.country].filter(Boolean).join(", ") ||
                     "Localisation inconnue"}
@@ -278,9 +344,9 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 12,
-    fontSize: 14,
+    fontSize: 13,
     color: "#888",
-    fontStyle: "italic",
+    fontFamily: FIGTREE_FONT,
   },
   searchWrapper: {
     paddingHorizontal: 16,
@@ -296,15 +362,17 @@ const styles = StyleSheet.create({
     height: 50,
   },
   searchIconText: {
-    fontSize: 18,
+    width: 17,
+    height: 17,
     marginRight: 10,
-    color: "#888",
+    alignItems: "center",
+    justifyContent: "center",
   },
   searchInput: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 14,
     color: "#1A1A1A",
-    fontFamily: Platform.OS === "ios" ? "Georgia" : "serif",
+    fontFamily: FIGTREE_FONT,
   },
   filterBtn: {
     width: 36,
@@ -318,8 +386,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#C8102E",
   },
   filterBtnIcon: {
-    fontSize: 18,
-    color: "#333",
+    width: 18,
+    height: 16,
+    alignItems: "center",
+    justifyContent: "center",
   },
   filtersPanel: {
     backgroundColor: "#FFFFFF",
@@ -328,12 +398,12 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   filterSectionTitle: {
-    fontSize: 12,
-    fontWeight: "700",
+    fontSize: 11,
     color: "#888",
     letterSpacing: 1,
     textTransform: "uppercase",
     marginBottom: 10,
+    fontFamily: FIGTREE_FONT,
   },
   filterChips: {
     flexDirection: "row",
@@ -353,12 +423,13 @@ const styles = StyleSheet.create({
     borderColor: "#C8102E",
   },
   chipText: {
-    fontSize: 13,
+    fontSize: 12,
     color: "#555",
-    fontWeight: "600",
+    fontFamily: FIGTREE_FONT,
   },
   chipTextActive: {
     color: "#fff",
+    fontFamily: FIGTREE_FONT,
   },
   cuisineInput: {
     borderWidth: 1.5,
@@ -366,9 +437,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    fontSize: 14,
+    fontSize: 13,
     color: "#1A1A1A",
     backgroundColor: "#FAFAFA",
+    fontFamily: FIGTREE_FONT,
   },
   contentArea: {
     flex: 1,
@@ -387,14 +459,15 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   mapPlaceholderText: {
-    fontSize: 16,
-    fontWeight: "700",
+    fontSize: 14,
     color: "#555",
+    fontFamily: FIGTREE_FONT,
   },
   mapSubtext: {
-    fontSize: 13,
+    fontSize: 12,
     color: "#777",
     marginTop: 4,
+    fontFamily: FIGTREE_FONT,
   },
   listContent: {
     paddingHorizontal: 16,
@@ -435,36 +508,38 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     flex: 1,
-    fontSize: 15,
-    fontWeight: "700",
+    fontSize: 14,
     color: "#1A1A1A",
+    fontFamily: FIGTREE_FONT,
   },
   cardBadge: {
-    fontSize: 10,
-    fontWeight: "700",
+    fontSize: 9,
     color: "#6A5C4D",
     backgroundColor: "#F3ECE4",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 10,
+    fontFamily: FIGTREE_FONT,
   },
   cardMeta: {
-    fontSize: 12,
+    fontSize: 11,
     color: "#6A6A6A",
     marginTop: 6,
+    fontFamily: FIGTREE_FONT,
   },
   emptyState: {
     alignItems: "center",
     paddingTop: 20,
   },
   emptyTitle: {
-    fontSize: 16,
-    fontWeight: "700",
+    fontSize: 14,
     color: "#333",
+    fontFamily: FIGTREE_FONT,
   },
   emptyText: {
-    fontSize: 13,
+    fontSize: 12,
     color: "#777",
     marginTop: 4,
+    fontFamily: FIGTREE_FONT,
   },
 });

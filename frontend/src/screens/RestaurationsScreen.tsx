@@ -10,9 +10,13 @@ import {
   Platform,
   TextInput,
   ScrollView,
+  Linking,
   FlatList,
 } from "react-native";
 import { restaurantService, Restaurant } from "../services/restaurantService";
+import { AppIcon } from "../components/AppIcon";
+
+const FIGTREE_FONT = "Figtree-Medium";
 
 interface RestaurationsScreenProps {
   onOpenFeed?: () => void;
@@ -26,45 +30,47 @@ type RestaurantSection = {
 };
 
 const RESTAURANTS_PER_CAROUSEL = 15;
-const INFLUENCER_CAROUSELS_COUNT = 6;
+const INFLUENCER_CAROUSELS_COUNT = 4;
+
+const openTheFork = async () => {
+  const url = "https://www.thefork.fr/";
+
+  const supported = await Linking.canOpenURL(url);
+
+  if (supported) {
+    await Linking.openURL(url);
+  } else {
+    console.error("Impossible d'ouvrir l'URL");
+  }
+};
 
 const CURATOR_PROFILES = [
   {
-    title: "La sélection de @LenaLifestyle",
+    title: "Sélection de Léna Situations",
     avatarUrl:
-      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=160&q=80",
+      "https://upload.wikimedia.org/wikipedia/commons/e/ea/L%C3%A9na_Situations_during_the_MiuMiu_Fashion_Show.png",
   },
   {
-    title: "Les spots de @FoodieNomade",
+    title: "Sélection de Pape San",
     avatarUrl:
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=160&q=80",
+      "https://upload.wikimedia.org/wikipedia/commons/3/34/Pape_San_en_2025.png",
   },
   {
-    title: "Coups de coeur de @ChefExplorer",
+    title: "Sélection de Cédric Grolet",
     avatarUrl:
-      "https://images.unsplash.com/photo-1502685104226-ee32379fefbe?auto=format&fit=crop&w=160&q=80",
+      "https://upload.wikimedia.org/wikipedia/commons/c/c9/C%C3%A9dric_Grolet_-_cropped_from_%22Meir_danon_cedric_grolet%22.jpg",
   },
   {
-    title: "Table trends par @GastroVibes",
+    title: "Sélection de Salt Bae (Nusret Gökçe)",
     avatarUrl:
-      "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=160&q=80",
-  },
-  {
-    title: "Adresses lifestyle de @UrbanBites",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=160&q=80",
-  },
-  {
-    title: "Les tables de @LuxeFoodDiary",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?auto=format&fit=crop&w=160&q=80",
+      "https://upload.wikimedia.org/wikipedia/commons/9/97/Salt_Bae.png",
   },
 ];
 
 const GUIDE_MICHELIN_PROFILE = {
-  title: "Sélection Guide Michelin",
+  title: "Sélection Michelin",
   avatarUrl:
-    "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=160&q=80",
+    "https://upload.wikimedia.org/wikipedia/commons/9/9f/Michelin_guide_logo.png",
 };
 
 const USER_PROFILE = {
@@ -79,6 +85,23 @@ const normalizeText = (value?: string) =>
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .trim();
+
+const hasOnlyLettersAndSpaces = (value?: string) => {
+  const name = (value || "").trim();
+  if (!name) return false;
+  return /^[\p{L}\s]+$/u.test(name);
+};
+
+const shuffleArray = <T,>(items: T[]) => {
+  const copy = [...items];
+
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+
+  return copy;
+};
 
 const getPriceSymbol = (priceRange?: string) => {
   const value = normalizeText(priceRange);
@@ -128,7 +151,9 @@ const RestaurantCarouselCard = ({
 
       <View style={styles.cardBody}>
         <View style={styles.cardTitleRow}>
-          <Text style={styles.cardBrandIcon}>◎</Text>
+          <View style={styles.cardBrandIcon}>
+            <AppIcon name="bibGourmand" width={18} height={16} />
+          </View>
           <Text style={styles.cardTitle} numberOfLines={2}>
             {restaurant.name}
           </Text>
@@ -138,14 +163,20 @@ const RestaurantCarouselCard = ({
           <Text style={styles.cardPrice}>
             {getPriceSymbol(restaurant.price_range)}
           </Text>
-          <Text style={styles.cardFavorite}>♡</Text>
+          <View style={styles.cardFavorite}>
+            <AppIcon name="favoris" width={18} height={16} />
+          </View>
         </View>
 
         <Text style={styles.cardLocation} numberOfLines={1}>
           {getLocationLabel(restaurant)}
         </Text>
 
-        <TouchableOpacity style={styles.reserveButton} activeOpacity={0.85}>
+        <TouchableOpacity
+          style={styles.reserveButton}
+          activeOpacity={0.85}
+          onPress={openTheFork}
+        >
           <Text style={styles.reserveButtonText}>Réserver</Text>
         </TouchableOpacity>
       </View>
@@ -217,9 +248,15 @@ export const RestaurationsScreen = ({
 
   const filteredRestaurants = useMemo(() => {
     const query = normalizeText(searchQuery);
-    if (!query) return restaurants;
+    if (!query) {
+      return restaurants.filter((restaurant) =>
+        hasOnlyLettersAndSpaces(restaurant.name),
+      );
+    }
 
     return restaurants.filter((restaurant) => {
+      if (!hasOnlyLettersAndSpaces(restaurant.name)) return false;
+
       const haystack = normalizeText(
         [
           restaurant.name,
@@ -236,6 +273,11 @@ export const RestaurationsScreen = ({
     });
   }, [restaurants, searchQuery]);
 
+  const randomizedRestaurants = useMemo(
+    () => shuffleArray(filteredRestaurants),
+    [filteredRestaurants],
+  );
+
   const sections = useMemo<RestaurantSection[]>(() => {
     return SECTION_PROFILES.map((profile, index) => {
       const start = index * RESTAURANTS_PER_CAROUSEL;
@@ -245,10 +287,10 @@ export const RestaurationsScreen = ({
         id: `section-${index}`,
         title: profile.title,
         avatarUrl: profile.avatarUrl,
-        items: filteredRestaurants.slice(start, end),
+        items: randomizedRestaurants.slice(start, end),
       };
     }).filter((section) => section.items.length > 0);
-  }, [filteredRestaurants]);
+  }, [randomizedRestaurants]);
 
   const handlePressRestaurant = (restaurant: Restaurant) => {
     const location = getLocationLabel(restaurant);
@@ -275,7 +317,9 @@ export const RestaurationsScreen = ({
 
       <View style={styles.searchRow}>
         <View style={styles.searchInputWrap}>
-          <Text style={styles.searchIcon}>⌕</Text>
+          <View style={styles.searchIcon}>
+            <AppIcon name="loupe" width={17} height={17} />
+          </View>
           <TextInput
             style={styles.searchInput}
             placeholder="Nom de restaurant, parcours..."
@@ -290,7 +334,7 @@ export const RestaurationsScreen = ({
           <TouchableOpacity style={styles.feedShortcut} onPress={onOpenFeed}>
             <Text style={styles.feedShortcutText}>feed</Text>
           </TouchableOpacity>
-        ) : null} */}
+        ) : null}  laisser en commentaire pas inclure pour l'instant*/}
       </View>
 
       {sections.length === 0 ? (
@@ -331,16 +375,16 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     color: "#716963",
-    fontSize: 14,
+    fontSize: 12,
+    fontFamily: FIGTREE_FONT,
   },
   screenTitle: {
-    fontSize: 54,
-    lineHeight: 58,
+    fontSize: 28,
+    lineHeight: 33,
     color: "#101010",
-    fontWeight: "700",
     paddingHorizontal: 24,
     marginBottom: 18,
-    fontFamily: Platform.OS === "ios" ? "Helvetica Neue" : "sans-serif-medium",
+    fontFamily: FIGTREE_FONT,
   },
   searchRow: {
     flexDirection: "row",
@@ -359,14 +403,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   searchIcon: {
-    fontSize: 24,
-    color: "#534A43",
+    width: 17,
+    height: 17,
     marginRight: 10,
+    alignItems: "center",
+    justifyContent: "center",
   },
   searchInput: {
     flex: 1,
     color: "#2D2621",
-    fontSize: 16,
+    fontSize: 14,
+    fontFamily: FIGTREE_FONT,
   },
   filterButton: {
     width: 56,
@@ -390,9 +437,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
   },
   feedShortcutText: {
-    fontSize: 13,
+    fontSize: 12,
     color: "#3E3732",
-    fontWeight: "600",
+    fontFamily: FIGTREE_FONT,
   },
   contentScroll: {
     paddingBottom: 120,
@@ -418,28 +465,28 @@ const styles = StyleSheet.create({
   sectionTitle: {
     flex: 1,
     color: "#3E3732",
-    fontSize: 19,
-    lineHeight: 24,
-    fontWeight: "600",
+    fontSize: 16,
+    lineHeight: 20,
+    fontFamily: FIGTREE_FONT,
   },
   sectionCardsRow: {
     paddingHorizontal: 24,
     gap: 14,
   },
   restaurantCard: {
-    width: 238,
+    width: 200,
     backgroundColor: "#FFFFFF",
     borderRadius: 20,
     overflow: "hidden",
   },
   cardImage: {
     width: "100%",
-    height: 160,
+    height: 130,
     resizeMode: "cover",
   },
   cardImagePlaceholder: {
     width: "100%",
-    height: 160,
+    height: 130,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#DDD7D1",
@@ -458,16 +505,18 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   cardBrandIcon: {
-    color: "#C0012C",
-    fontSize: 18,
+    width: 18,
+    height: 16,
     marginTop: 2,
+    alignItems: "center",
+    justifyContent: "center",
   },
   cardTitle: {
     flex: 1,
-    fontSize: 18,
-    lineHeight: 22,
-    fontWeight: "700",
+    fontSize: 16,
+    lineHeight: 20,
     color: "#101010",
+    fontFamily: FIGTREE_FONT,
   },
   cardPriceFavoriteRow: {
     flexDirection: "row",
@@ -477,18 +526,20 @@ const styles = StyleSheet.create({
   },
   cardPrice: {
     color: "#27211D",
-    fontSize: 17,
-    fontWeight: "600",
+    fontSize: 15,
+    fontFamily: FIGTREE_FONT,
   },
   cardFavorite: {
-    color: "#101010",
-    fontSize: 22,
-    lineHeight: 24,
+    width: 18,
+    height: 16,
+    alignItems: "center",
+    justifyContent: "center",
   },
   cardLocation: {
     marginTop: 8,
     color: "#534A43",
-    fontSize: 14,
+    fontSize: 12,
+    fontFamily: FIGTREE_FONT,
   },
   reserveButton: {
     height: 46,
@@ -501,8 +552,8 @@ const styles = StyleSheet.create({
   },
   reserveButtonText: {
     color: "#C0012C",
-    fontSize: 20,
-    fontWeight: "500",
+    fontSize: 16,
+    fontFamily: FIGTREE_FONT,
   },
   emptyState: {
     marginTop: 80,
@@ -510,13 +561,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   emptyTitle: {
-    fontSize: 20,
+    fontSize: 16,
     color: "#2D2621",
-    fontWeight: "700",
+    fontFamily: FIGTREE_FONT,
   },
   emptyText: {
     marginTop: 8,
-    fontSize: 14,
+    fontSize: 12,
     color: "#716963",
+    fontFamily: FIGTREE_FONT,
   },
 });
