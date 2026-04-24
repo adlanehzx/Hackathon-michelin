@@ -60,7 +60,7 @@ export const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({
     >
       <Text style={styles.title}>Mot de passe oublié</Text>
       <Text style={styles.subtitle}>
-        Saisis ton e-mail pour recevoir un code de 8 caractères.
+        Saisissez votre e-mail pour recevoir un code de 8 caractères.
       </Text>
 
       {/* Email */}
@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
   },
   button: {
     width: "100%",
-    backgroundColor: "#111",
+    backgroundColor: "#C0012C",
     paddingVertical: 16,
     borderRadius: 30,
     alignItems: "center",

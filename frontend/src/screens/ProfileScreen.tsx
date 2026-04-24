@@ -8,6 +8,7 @@ import {
   Alert,
   Platform,
   ActivityIndicator,
+  Image,
 } from "react-native";
 import { useAuth } from "../context/AuthContext";
 import gamificationService from "../services/gamificationService";
@@ -16,7 +17,8 @@ import { ForgotPasswordScreen } from "./ForgotPasswordScreen";
 import { ResetPasswordScreen } from "./ResetPasswordScreen";
 import { RegisterScreen } from "./RegisterScreen";
 import { SettingsScreen } from "./SettingsScreen";
-import { SettingsIcon } from "../components/SvgIcons";
+import { BadgesScreen, getBadgeImage } from "./BadgesScreen";
+import { SettingsIcon, LevelStarIcon } from "../components/SvgIcons";
 
 type AuthView = "login" | "register" | "forgot" | "reset";
 
@@ -60,7 +62,7 @@ const AuthFlowView: React.FC<{
 const LoggedOutView: React.FC<{ onConnect: () => void }> = ({ onConnect }) => {
   return (
     <ScrollView style={styles.page} contentContainerStyle={styles.pageContent}>
-      <Text style={styles.pageTitle}>Mon profil</Text>
+      <Text style={[styles.pageTitle, { marginBottom: 28 }]}>Mon profil</Text>
 
       <TouchableOpacity style={styles.connectButton} onPress={onConnect}>
         <Text style={styles.connectButtonText}>Se connecter / S'inscrire</Text>
@@ -100,9 +102,10 @@ const LoggedOutView: React.FC<{ onConnect: () => void }> = ({ onConnect }) => {
   );
 };
 
-const LoggedInView: React.FC<{ onOpenSettings: () => void }> = ({
-  onOpenSettings,
-}) => {
+const LoggedInView: React.FC<{
+  onOpenSettings: () => void;
+  onOpenBadges: () => void;
+}> = ({ onOpenSettings, onOpenBadges }) => {
   const { user, token, logout } = useAuth();
   const [progress, setProgress] = useState<any>(null);
   const [badges, setBadges] = useState<any[]>([]);
@@ -154,6 +157,7 @@ const LoggedInView: React.FC<{ onOpenSettings: () => void }> = ({
 
   const fullName = user ? `${user.prenom} ${user.nom.toUpperCase()}` : "";
   const levelName = progress?.current_level?.name || "Curieux";
+  const levelNumber = progress?.current_level?.level_number || 1;
   const hasBadges = badges.length > 0;
 
   if (loading) {
@@ -187,7 +191,10 @@ const LoggedInView: React.FC<{ onOpenSettings: () => void }> = ({
           <Text style={styles.profileName}>{fullName}</Text>
           <Text style={styles.profileSub}>Aucun parcours complété</Text>
           <View style={styles.badgeTag}>
-            <Text style={styles.badgeTagText}>{levelName.toUpperCase()}</Text>
+            <LevelStarIcon width={14} height={14} />
+            <Text style={styles.badgeTagText}>
+              Niv. {levelNumber} – {levelName.toUpperCase()}
+            </Text>
           </View>
         </View>
       </View>
@@ -198,9 +205,13 @@ const LoggedInView: React.FC<{ onOpenSettings: () => void }> = ({
         </Text>
         <View style={styles.badgesRow}>
           {hasBadges ? (
-            badges.slice(0, 3).map((b: any) => (
+            badges.slice(0, 3).map((b: any, i: number) => (
               <View key={b.id} style={styles.badgeEarned}>
-                <Text style={styles.badgeEarnedText}>{b.name[0]}</Text>
+                <Image
+                  source={getBadgeImage(i)}
+                  style={styles.badgeEarnedImage}
+                  resizeMode="contain"
+                />
               </View>
             ))
           ) : (
@@ -215,7 +226,7 @@ const LoggedInView: React.FC<{ onOpenSettings: () => void }> = ({
           Retrouves tous tes badges ici et découvre comment évoluer dans les
           niveaux !
         </Text>
-        <TouchableOpacity style={styles.progressionButton}>
+        <TouchableOpacity style={styles.progressionButton} onPress={onOpenBadges}>
           <Text style={styles.progressionButtonText}>Voir ma progression</Text>
         </TouchableOpacity>
       </View>
@@ -251,13 +262,23 @@ export const ProfileScreen: React.FC = () => {
   const [resetEmail, setResetEmail] = useState("");
   const [showAuth, setShowAuth] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showBadges, setShowBadges] = useState(false);
 
   if (isSignedIn && showSettings) {
     return <SettingsScreen onBack={() => setShowSettings(false)} />;
   }
 
+  if (isSignedIn && showBadges) {
+    return <BadgesScreen onBack={() => setShowBadges(false)} />;
+  }
+
   if (isSignedIn) {
-    return <LoggedInView onOpenSettings={() => setShowSettings(true)} />;
+    return (
+      <LoggedInView
+        onOpenSettings={() => setShowSettings(true)}
+        onOpenBadges={() => setShowBadges(true)}
+      />
+    );
   }
 
   if (showAuth) {
@@ -333,16 +354,19 @@ const styles = StyleSheet.create({
   },
   badgeTag: {
     alignSelf: "flex-start",
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: "#555",
     borderRadius: 6,
     paddingHorizontal: 10,
     paddingVertical: 4,
+    gap: 5,
   },
   badgeTagText: {
     color: "#fff",
     fontSize: 11,
     fontWeight: "bold",
-    letterSpacing: 1,
+    letterSpacing: 0.5,
   },
 
   card: {
@@ -359,14 +383,14 @@ const styles = StyleSheet.create({
   },
   badgesRow: {
     flexDirection: "row",
-    gap: 8,
-    marginBottom: 14,
+    marginBottom: 12,
   },
   badgePlaceholder: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: "#e0e0e0",
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#D9D9D9",
+    marginRight: -10,
   },
   badgesDesc: {
     fontSize: 14,
@@ -479,17 +503,19 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   badgeEarned: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: "#c0001a",
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#F0F8FF",
+    borderWidth: 2,
+    borderColor: "#0078C9",
     alignItems: "center",
     justifyContent: "center",
+    marginRight: -8,
   },
-  badgeEarnedText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 18,
+  badgeEarnedImage: {
+    width: 28,
+    height: 28,
   },
 
   logoutButton: {
